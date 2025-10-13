@@ -1,26 +1,29 @@
 ---
 marp: true
-title: MergeCoT ICSE 2026 Rebuttal & Revision Plan
+title: MergeCoT ICSE 2026 回顾
 theme: default
 paginate: true
 size: 16:9
 ---
 
 <!-- _class: lead -->
-# MergeCoT Rebuttal & Revision Plan
+# MergeCoT 回顾
 
 From Generation to Reasoning: Chain-of-Thought Guided Merge Conflict Resolution
 
-作者：MergeCoT 团队｜汇报日期：2025-10-10
+汇报人：彭春友｜汇报日期：2025-10-10
 
 ---
 
-## 议程
+## 目录 
 
-- 评审要点与核心修改方向（基于 review.md）
-- 结果对比增补：表 1–4 的差值列（基于 fix.md）
-- 修订任务清单与优先级（基于 todos.md）
+- 评审要点与核心修改方向
+- 结果对比增补：表 1–4 的差值列
+- 修订任务清单与优先级
 - 时间计划与下一步
+
+---
+
 
 ---
 
