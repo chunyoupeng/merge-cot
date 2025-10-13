@@ -300,12 +300,12 @@ However, whether in classification or generative models, these methods essential
 \begin{figure}[b]
     \centering
     \includegraphics[width=1\linewidth]{Figures/Conflict example diagram.pdf}
-    \caption{Conflict example diagram.}
+    \caption{Conflict example.}
     \label{fig:Conflict example}
 \end{figure}
 
 \autoref{fig:Conflict example} shows a typical merge conflict example, where the standard diff3 algorithm generates the merge result.
-The conflict region is between \verb|<<<<<<<| and \verb|>>>>>>>|, with \verb|<<<<<<<| A and \verb|<<<<<<<| BASE representing code from branch A, \verb|=======| and \verb|>>>>>>>| B representing code from branch B, and \verb+|||||||+ BASE and \verb|=======| representing their common ancestor version O. In this example, branch A introduces a points redemption mechanism based on the original discount logic, replacing price and discount in the base version with priceCents and discountRate; branch B renames the price variable to amountCents, adds a currency parameter, and includes special logic for handling "CNY."
+The conflict region is delimited by the markers \verb|<<<<<<<| and \verb|>>>>>>>|. Inside the block, \verb|<<<<<<<|\ A marks content from branch A, \verb+|||||||+\ BASE shows the common ancestor version O, \verb|=======| separates the two sides, and \verb|>>>>>>>|\ B closes the block with content from branch B. In this example, branch A introduces a points redemption mechanism based on the original discount logic, replacing price and discount in the base version with priceCents and discountRate; branch B renames the price variable to amountCents, adds a currency parameter, and includes special logic for handling "CNY."
 
 The ideal conflict resolution should integrate both changes, using the more refined unit representation (cents) while preserving the points redemption feature and the currency determination logic.  However, existing methods—whether classification-based MergeBERT or generative MergeGen—often fail to understand the intent behind changes in each branch deeply and tend to perform superficial concatenation, leading to issues such as mixed variables and logical omissions.
 For example, priceCents and amountCents in~\autoref{fig:Conflict example} actually represent the same concept, and if the model cannot recognise this semantic equivalence and combines them based on surface-level text, it may use different variable names in the merged result, causing syntax errors or semantic confusion. Therefore, when faced with conflicts involving structural differences and complex semantic changes, existing methods lack the necessary reasoning capabilities and struggle to generate semantically consistent and functionally complete solutions.
@@ -324,7 +324,7 @@ Currently, both classification-based and generative methods generally rely on sp
 In contrast, introducing a CoT reasoning mechanism helps the model understand the general logic of conflict resolution at a deeper level. By simulating the reasoning process of human developers when handling conflicts—first analysing the changes in each branch, understanding the functional intentions behind them, and then manually synthesising a merged solution that meets both sides’ expectations—the model can learn abstract conflict resolution patterns from data, allowing it to transcend specific language and syntax dependencies.
 
 To achieve this goal, this paper proposes MergeCoT, which guides the model to generate intermediate reasoning steps, thereby enhancing its ability to understand the causes of conflicts and construct resolution paths. 
-This leads to the generation of more accurate, interpretable, and highly generalised merge results.
+This leads to the generation of more accurate, interpretable, and highly generalised (i.e., transferable across languages/projects) merge results.
 
 \section{METHOD}
 This section presents a detailed description of the proposed method, MergeCoT, with an overview of the process illustrated in~\autoref{fig:MergeCoT}.
@@ -355,10 +355,11 @@ However, these edit sequences only capture the types of edit operations and igno
 
 Considering that conflict code in real-world scenarios may be relatively long, we designed a concise DSL to represent the editing operations between branches and the base version. This language includes the following three basic instructions:
 \begin{itemize}
-    \item \texttt{<ADD> X}: Indicates that X is newly added content (present in the branch but missing in the base version).
-    \item \texttt{<DELETE> X}: Indicates that X is deleted content (present in the base version but missing in the branch).
-    \item \texttt{<REPLACE> X <WITH> Y}: Indicates that X in the base version has been replaced with Y in the branch.
+    \item \texttt{<ADD> X}: Indicates that $X$ is newly added content (present in the branch but missing in the base version).
+    \item \texttt{<DELETE> X}: Indicates that $X$ is deleted content (present in the base version but missing in the branch).
+    \item \texttt{<REPLACE> X <WITH> Y}: Indicates that $X$ in the base version has been replaced with $Y$ in the branch.
 \end{itemize}
+Here, $X$ and $Y$ denote concrete token sequences (possibly multi-token substrings) extracted from the corresponding base/branch spans under a deterministic tokenisation; they are not placeholders. When the same token string appears multiple times, $X$ and $Y$ refer to the specific occurrence within the aligned span indicated by the ES.
 
 This DSL representation not only simplifies the conflict information but also provides clear contextual guidance for generating thought chains.
 
@@ -425,7 +426,7 @@ We made the following three improvements to this method to increase the quality 
 Intuitively, even if the model initially cannot generate the correct reasoning, it can still produce reasonable reasoning after knowing the correct answer—this is abductive reasoning.
 % \stma{or....answer-an instance of abductive reasoning.}
 
-\textbf{For each merge conflict, we generate K CoTs and their corresponding answers by adjusting the temperature.} Since large-scale language models (LLMs) can generate multiple answers, increasing the number of generated answers improves the probability of success in the final result. This method helps increase the diversity of the dataset.
+\textbf{For each merge conflict, we generate $K$ CoTs and their corresponding answers by adjusting the temperature.} Since large-scale language models (LLMs) can generate multiple answers, increasing the number of generated answers improves the probability of success in the final result. This method helps increase the diversity of the dataset.
 
 \begin{algorithm}[t]
 \caption{\textsc{CoT Generation}}\label{alg2}
@@ -457,9 +458,9 @@ $\mathcal{C} \gets \emptyset$\;
 
 As shown in the algorithm~\ref{alg2}, our dataset generation process is divided into two stages:
 
-\textbf{Stage 1 (Free Generation):} Given a merge conflict dataset $\mathcal{D}={(x_i,y_i)}_{i=1}^{D}$, for each conflict sample $x_i$, we first input $x_i$ (with the ES prompt) into the model and ask it to output K CoTs and merged code. If the generated merged code matches the real merge result $y_i$ (verified via strict string matching), the pair $(r_i, y_i)$ is adopted as part of the new training set.
+\textbf{Stage 1 (Free Generation):} Given a merge conflict dataset $\mathcal{D}={(x_i,y_i)}_{i=1}^{D}$, for each conflict sample $x_i$, we first input $x_i$ (with the ES prompt) into the model and ask it to output $K$ CoTs and merged code (where $K$ is the number of sampled candidates per instance). If the generated merged code matches the real merge result $y_i$ (verified via strict string matching), the pair $(r_i, y_i)$ is adopted as part of the new training set, where $r_i$ denotes the selected reasoning trace (CoT) corresponding to $x_i$.
 
-\textbf{Stage 2 (Rationalisation):} For conflicts where Stage 1 failed to generate the correct merged code, we incorporate the real answer $y_i$ as a hint into the conflict instance and ask the model to provide a step-by-step reasoning process, ultimately generating K CoTs that match the answer. 
+\textbf{Stage 2 (Rationalisation):} For conflicts where Stage 1 failed to generate the correct merged code, we incorporate the real answer $y_i$ as a hint into the conflict instance and ask the model to provide a step-by-step reasoning process, ultimately generating $K$ CoTs that match the answer. 
 The resulting CoTs, which match the real answer, are added to the new training set as $(r_i, y_i)$.
 
 Through these two stages, we ultimately obtain a high-quality CoT dataset $\mathcal{C}={(x_i, r_i, y_i)}$, where each CoT $r_i$ is consistent with the real merge conflict solution $y_i$. This method ensures the accuracy and consistency of the CoT in the dataset, while also considering the diversity of the data.
@@ -468,7 +469,7 @@ This method is highly efficient. Although in the worst case, each instance may r
 Additionally, the counterfactual reasoning generated in Stage 2 (i.e., the CoT produced by the model after knowing the correct answer) further enriches the diversity of the dataset and significantly improves the generalisation ability of the subsequent trained model. 
 Although this method is primarily aimed at resolving merge conflicts, the approach and process are not limited to this task and can be applied to any reasoning task with verifiable answers.
 
-Through these two steps, we generated CoT-annotated data for the vast majority of training conflicts. In experiments, this method allowed about 91.3\% of Java data to have valid CoT. For the very few cases where reasoning failed, we chose to discard them. Eric et al.’s method~\cite{star}, which adopts a $K=1$ setting (i.e., generating only one CoT per data sample), achieves a data utilisation rate of only 51.5\% in the two-stage process. In contrast, our method improves this by 39.8\%, significantly enhancing training data diversity.
+Through these two steps, we generated CoT-annotated data for the vast majority of training conflicts. In experiments, this method allowed 91.3\% of Java data to have valid CoT; we observed similarly high valid-CoT rates across other languages (details in the appendix). For the very few cases where reasoning failed, we chose to discard them. Eric et al.’s method~\cite{star}, which adopts a $K=1$ setting (i.e., generating only one CoT per data sample), achieves a data utilisation rate of only 51.5\% in the two-stage process. In contrast, our method improves this by 39.8\%, significantly enhancing training data diversity.
 
 All training data used in the experiments (including ES prompts and CoT) have been made publicly available for other researchers to reproduce.
 
@@ -488,7 +489,7 @@ We evaluate the practicality and effectiveness of MergeCoT by addressing the fol
 Our dataset is based on the multilingual merge conflict dataset originally constructed by MergeBERT~\cite{mergebert}, which was also used for training and evaluation in MergeGen~\cite{mergegen}. 
 It is collected from over 100,000 open-source software repositories and retains commits that contain real-world merge conflicts.
 % \stma{How about references to previous studies? The first sentence in the evaluation section below uses the same Following and provides references. Besides, why twice Following? Maybe here `Consistent with prior work (e.g., cite...)}
-Each instance in the raw dataset consists of a base version, two conflicting branch versions, and a human-written merge result (i.e., the ground-truth resolution). The dataset covers four programming languages: Java, C\#, JavaScript, and TypeScript, enabling us to assess MergeCoT’s multilingual capabilities. We randomly split the dataset into training, validation, and test sets in a ratio of approximately 8:1:1. The CoT dataset is constructed using the training set (see Section 3.2). The model’s hyperparameters are optimized using the validation set, with the final performance assessed on the held-out test set.
+Each instance in the raw dataset consists of a base version, two conflicting branch versions, and a ground-truth merged result from the project history (which may be produced by developers or by a tool decision such as OURS/THEIRS). The dataset covers four programming languages: Java, C\#, JavaScript, and TypeScript, enabling us to assess MergeCoT’s multilingual capabilities. We randomly split the dataset into training, validation, and test sets in a ratio of approximately 8:1:1. The CoT dataset is constructed using the training set (see Section 3.2). The model’s hyperparameters are optimized using the validation set, with the final performance assessed on the held-out test set.
 
 \subsection{Baselines}
 We compare MergeCoT against a variety of merge conflict resolution techniques, including unstructured, structured, and learning-based approaches:
@@ -633,7 +634,7 @@ Although most of the automatically generated CoT are of high quality, occasional
 
 \subsection{Comparison with Direct LLM-Based Generation}
 
-One may question why not simply use large LLMs such as GPT-4 or Codex to resolve merge conflicts directly. Indeed, prior work such as ChatMerge~\cite{17} explores this approach. While LLMs can resolve many conflicts, they are not flawless and incur significant computational cost when applied to thousands of instances.
+One may question why not simply use LLMs such as GPT-4 or Codex to resolve merge conflicts directly. Indeed, prior work such as ChatMerge~\cite{17} explores this approach. While LLMs can resolve many conflicts, they are not flawless and incur significant computational cost when applied to thousands of instances.
 
 Our findings suggest that specialising an open-source model and equipping it with reasoning capabilities yields high accuracy without relying on external APIs. Moreover, our CoT-based approach provides transparent reasoning, whereas general-purpose LLMs like GPT-4 do not generate explanations unless explicitly prompted—an approach that is both verbose and costly.
 We envision a hybrid workflow wherein lightweight fine-tuned models such as MergeCoT are used for the majority of merge scenarios, and only particularly challenging cases are escalated to larger models or human intervention. This process can be seamlessly integrated into developer workflows and enhanced with interpretable reasoning and user confirmation.
@@ -671,4 +672,3 @@ Extensive experimental evaluations demonstrate that MergeCoT achieves SOTA perfo
 \endinput
 %%
 %% End of file `sample-sigconf-authordraft.tex'.
-
