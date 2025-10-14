@@ -19,11 +19,11 @@ Moreover, we also provide you with the edit sequences, which refer to the token-
 # Edit Sequence
 
 ## From base to a
-<REPLACE> chronicleHashInstanceBuilder <WITH> mapFactory)
+\<REPLACE> chronicleHashInstanceBuilder \<WITH> mapFactory)
 
 
 ## From base to b
-<REPLACE> ARG_1 <WITH> arg1)
+\<REPLACE> ARG_1 \<WITH> arg1)
 
 
 # CoT guide

@@ -16,9 +16,6 @@ short channelId1 = inWire.read(arg1).int16();
 <|im_start|>asistant
 
 ### Model Prediction
-<think>
-
-</think>
 
 ```java
 short channelId1 = inWire.read(arg1).int16();
