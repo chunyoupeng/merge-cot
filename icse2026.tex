@@ -641,6 +641,20 @@ One may question why not simply use LLMs such as GPT-4 or Codex to resolve merge
 Our findings suggest that specialising an open-source model and equipping it with reasoning capabilities yields high accuracy without relying on external APIs. Moreover, our CoT-based approach provides transparent reasoning, whereas general-purpose LLMs like GPT-4 do not generate explanations unless explicitly prompted—an approach that is both verbose and costly.
 We envision a hybrid workflow wherein lightweight fine-tuned models such as MergeCoT are used for the majority of merge scenarios, and only particularly challenging cases are escalated to larger models or human intervention. This process can be seamlessly integrated into developer workflows and enhanced with interpretable reasoning and user confirmation.
 
+\subsection{Why ES + Domain-CoT Instead of Open-Source Small Reasoners}
+
+Recent open-source small reasoning models (e.g., the DeepSeek-R1 family and its distilled variants~\cite{deepseekr1}) are attractive for their low cost and strong general reasoning ability. However, they are not drop-in replacements for merge conflict resolution. We argue that an ES-anchored, domain-specific CoT is preferable for four reasons:
+
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Controllability.} Free-form CoT from general-purpose reasoners is often long and unpredictable; on large conflicts it can easily exceed the context window, and truncation degrades correctness. Our ES-guided CoT is \emph{structured and bounded}: each step must reference an \textsc{Add}/\textsc{Delete}/\textsc{Replace} operation in the Edit Script, which keeps the rationale compact and aligned with the change map rather than drifting into verbose narration.
+    \item \textbf{Context Budget and Throughput.} Real conflicts are long. Adding an unconstrained narrative CoT consumes substantial tokens that should instead be allocated to code and verification. ES compresses conflict information by eliding unchanged regions and retaining only edits, allowing the model to spend its budget on localisation and synthesis. In practice, this reduces latency and increases throughput compared to long, explanatory CoT.
+    \item \textbf{Domain Alignment.} R1-style models produce domain-agnostic explanations that are not guaranteed to follow edit relationships; this invites plausible-but-off-topic justifications, hallucinated intent, or modifications outside the changed regions. By anchoring every rationale to ES operations, our method naturally constrains the model to stay within the conflict scope and prevents out-of-bound edits, improving precision and auditability.
+    \item \textbf{Verifiability and Auditability.} Because each reasoning step is tied to a concrete edit, we can deterministically check coherence between the predicted rationale, the ES, and the final patch (together with exact-match evaluation and self-consistency voting). This traceability is difficult to obtain from free-form CoT and is essential for developer trust in automated merges.
+\end{itemize}
+
+In short, ES + domain-CoT complements general small reasoners: the ES acts as a 
+"controller" that confines and structures reasoning for this task, delivering better controllability, higher effective context for code, and stronger domain fidelity. In a practical workflow, a specialised model like MergeCoT handles the common case efficiently, with rare hard cases escalated to larger models or human review.
+
 \section{RELATED WORK}
 During large-scale software development, integrating different versions often leads to a significant number of merge conflicts, typically involving extensive code modifications and substantially increasing development costs. To address this issue, researchers have proposed a variety of techniques aimed at automatically generating conflict resolutions. Existing merge conflict resolution approaches can be broadly categorised into four classes: unstructured, structured, semi-structured, and deep learning-based techniques.
 
