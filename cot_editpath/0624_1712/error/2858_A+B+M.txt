@@ -1,0 +1,111 @@
+### Prompt
+<|im_start|>system
+You are a Great Git merge conflict resolver. Merge conflicts occur because both branch a and branch b have modified the same part of the base code in different ways. Your task is to analyze the changes made by a and b relative to base, understand their intentions, and produce a well-reasoned CoT (Chain of Thought) then then answer.<|im_end|>
+<|im_start|>user
+# Conflict
+>>>>>>> a
+//<<<<<<< HEAD
+                    // Fill rest with air
+                    for (int y = newBlock + 1; y <= ((curHeight + 15) >> 4); ++y) {
+                        session.setBlock(xr, y, zr, fillerAir);
+//=======
+//                    // Shrink -- start from bottom
+//                    for (int y = 0; y < newHeight - originY; ++y) {
+//                        int copyFrom = (int) (y * scale);
+//                        session.setBlock(BlockVector3.at(xr, originY + y, zr), session.getBlock(BlockVector3.at(xr, originY + copyFrom, zr)));
+//>>>>>>> 2c8b2fe0... Move vectors to static creators, for caching
+||||||| base
+// Shrink -- start from bottom
+                    for (int y = 0; y < newHeight - originY; ++y) {
+                        int copyFrom = (int) (y * scale);
+                        session.setBlock(new Vector(xr, originY + y, zr), session.getBlock(new Vector(xr, originY + copyFrom, zr)));
+=======
+// Shrink -- start from bottom
+                    for (int y = 0; y < newHeight - originY; ++y) {
+                        int copyFrom = (int) (y * scale);
+                        session.setBlock(BlockVector3.at(xr, originY + y, zr), session.getBlock(BlockVector3.at(xr, originY + copyFrom, zr)));
+<<<<<<< b
+
+Moreover, we also provide you with the edit sequences, which refer to the token-level modifications from base to a and b, respectively.
+# Edit Sequence
+
+## From base to a
+<ADD> / / < < < < < < < HEAD <newline> / / Fill rest with air <newline> for ( int y = newBlock + 1 ; y < = ( ( curHeight + 15 ) > > 4 ) ; + + y ) { <newline> session . setBlock ( xr , y , zr , fillerAir ) ; <newline> / / = = = = = = = <newline> / / / / / / / /
+<REPLACE> new <WITH> BlockVector3)
+<REPLACE> Vector <WITH> .)
+<ADD> at
+<REPLACE> new <WITH> BlockVector3)
+<REPLACE> Vector <WITH> .)
+<ADD> at <newline> / / > > > > > > > 2c8b2fe0 . . . Move vectors to static creators , for caching
+
+
+## From base to b
+<REPLACE> new <WITH> BlockVector3)
+<REPLACE> Vector <WITH> .)
+<ADD> at
+<REPLACE> new <WITH> BlockVector3)
+<REPLACE> Vector <WITH> .)
+<ADD> at
+
+
+# CoT guide
+1. Analyze the conflict point(s): what did `a` change compared to `base`? what did `b` change compared to `base`?
+2. Evaluate each change: why should a particular change be kept, discarded, or modified?
+3. Understand the intention behind each change in `a` and `b`.
+4. Final decision: based on code style, business logic, and correctness, determine the appropriate resolution. 
+
+# Output Format:
+You should output two thing: 
+1. the CoT, which should be placed within the <cot></cot> tag.
+2. Final resolution, the answer should be within the ```java and ```\/no_think<|im_end|>
+<|im_start|>asistant
+
+### Model Prediction
+<think>
+
+</think>
+
+<cot>
+1. **Analyze the conflict point(s):**
+   - **Branch `a`**:
+     - Introduced a new block of code to "Fill rest with air" using a loop that sets blocks to `fillerAir` from `newBlock + 1` to `(curHeight + 15) >> 4`.
+     - Replaced `new Vector(...)` with `BlockVector3.at(...)` in both `setBlock` and `getBlock` calls.
+   - **Branch `b`**:
+     - Only modified the vector creation syntax, replacing `new Vector(...)` with `BlockVector3.at(...)`, but did not introduce any new logic.
+   - **Base**:
+     - Used `new Vector(...)` for creating block vectors.
+     - Included a loop for "Shrink -- start from bottom", which copies block data from a scaled source to a destination.
+
+2. **Evaluate each change:**
+   - **Branch `a`'s new logic**:
+     - The "Fill rest with air" logic is a new feature that fills the upper part of a block with air. This is a meaningful addition that likely serves a specific purpose (e.g., clearing unused space).
+     - The replacement of `new Vector(...)` with `BlockVector3.at(...)` is a modernization or optimization change, likely for performance or consistency with a new API.
+   - **Branch `b`'s change**:
+     - The change is purely syntactic and aligns with the same modernization goal as in `a`. It does not introduce new logic or conflict with `a`'s new logic.
+
+3. **Understand the intention behind each change:**
+   - **Branch `a`**:
+     - Intends to add a new feature (filling with air) and modernize the vector creation syntax.
+   - **Branch `b`**:
+     - Intends to modernize the vector creation syntax without adding new logic.
+
+4. **Final decision:**
+   - The new logic in `a` is a valid and meaningful addition that should be preserved.
+   - The vector syntax change in `b` is consistent with the modernization in `a` and should be preserved as well.
+   - The resolution should include both the new logic and the updated vector syntax.
+</cot>
+
+```java
+// Fill rest with air
+for (int y = newBlock + 1; y <= ((curHeight + 15) >> 4); ++y) {
+    session.setBlock(xr, y, zr, fillerAir
+
+### Gold (Ground Truth)
+// Fill rest with air
+                    for (int y = newBlock + 1; y <= ((curHeight + 15) >> 4); ++y) {
+                        session.setBlock(xr, y, zr, fillerAir);
+
+### Diff Type
+A+B+M
+
+### Note: No code block found in the prediction.

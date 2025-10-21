@@ -1,0 +1,216 @@
+### Prompt
+<|im_start|>system
+You are a Great Git merge conflict resolver. Merge conflicts occur because both branch a and branch b have modified the same part of the base code in different ways. Your task is to analyze the changes made by a and b relative to base, understand their intentions, and produce a well-reasoned CoT (Chain of Thought) then then answer.<|im_end|>
+<|im_start|>user
+# Conflict
+>>>>>>> a
+@ColorInt
+    public static int getThemeColor(@NonNull final Context context, @AttrRes final int attributeColor) {
+        final TypedValue value = new TypedValue();
+        context.getTheme().resolveAttribute(attributeColor, value, true);
+        return value.data;
+    }
+||||||| base
+
+=======
+public static List<SavedToken> removeCardFromSavedCards(List<SavedToken> savedTokens, String maskedCard) {
+        List<SavedToken> updatedTokens = new ArrayList<>();
+        for (SavedToken savedToken : savedTokens) {
+            if (!savedToken.getMaskedCard().equals(maskedCard)) {
+                updatedTokens.add(savedToken);
+            }
+        }
+        return updatedTokens;
+    }
+
+    public static ArrayList<SaveCardRequest> convertSavedToken(List<SavedToken> savedTokens) {
+        ArrayList<SaveCardRequest> cards = new ArrayList<>();
+        if (savedTokens != null && !savedTokens.isEmpty()) {
+            for (SavedToken saved : savedTokens) {
+                cards.add(new SaveCardRequest(saved.getToken(), saved.getMaskedCard(), saved.getTokenType()));
+            }
+        }
+        return cards;
+    }
+
+    public static List<SaveCardRequest> filterCardsByClickType(Context context, List<SaveCardRequest> cards) {
+        MidtransSDK midtransSDK = MidtransSDK.getInstance();
+        ArrayList<SaveCardRequest> filteredCards = new ArrayList<>();
+        if (cards != null && !cards.isEmpty()) {
+            if (midtransSDK.isEnableBuiltInTokenStorage()) {
+                for (SaveCardRequest card : cards) {
+                    if (midtransSDK.getTransactionRequest().getCardClickType().equals(context.getString(R.string.card_click_type_one_click))
+                            && card.getType().equals(context.getString(R.string.saved_card_one_click))) {
+                        filteredCards.add(card);
+                    } else if (midtransSDK.getTransactionRequest().getCardClickType().equals(context.getString(R.string.card_click_type_two_click))
+                            && card.getType().equals(context.getString(R.string.saved_card_two_click))) {
+                        filteredCards.add(card);
+                    }
+                }
+            } else {
+                //if token storage on merchant server then saved cards can be used just for two click
+                String clickType = midtransSDK.getTransactionRequest().getCardClickType();
+                if (!TextUtils.isEmpty(clickType) && clickType.equals(context.getString(R.string.card_click_type_two_click))) {
+                    filteredCards.addAll(cards);
+                }
+            }
+        }
+
+        return filteredCards;
+    }
+
+    public static List<SaveCardRequest> filterMultipleSavedCard(ArrayList<SaveCardRequest> savedCards) {
+        Collections.reverse(savedCards);
+        Set<String> maskedCardSet = new HashSet<>();
+        for (Iterator<SaveCardRequest> it = savedCards.iterator(); it.hasNext(); ) {
+            if (!maskedCardSet.add(it.next().getMaskedCard())) {
+                it.remove();
+            }
+        }
+        return savedCards;
+    }
+<<<<<<< b
+
+Moreover, we also provide you with the edit sequences, which refer to the token-level modifications from base to a and b, respectively.
+# Edit Sequence
+
+## From base to a
+The entire content comes from it, as the base is empty.
+
+
+## From base to b
+The entire content comes from it, as the base is empty.
+
+
+# CoT guide
+1. Analyze the conflict point(s): what did `a` change compared to `base`? what did `b` change compared to `base`?
+2. Evaluate each change: why should a particular change be kept, discarded, or modified?
+3. Understand the intention behind each change in `a` and `b`.
+4. Final decision: based on code style, business logic, and correctness, determine the appropriate resolution. 
+
+# Output Format:
+You should output two thing: 
+1. the CoT, which should be placed within the <cot></cot> tag.
+2. Final resolution, the answer should be within the ```java and ```\/no_think<|im_end|>
+<|im_start|>asistant
+
+### Model Prediction
+<think>
+
+</think>
+
+<cot>
+1. **Analyze the conflict point(s):**
+   - The conflict is between two completely different sets of code:
+     - **Branch `a`** introduces a new method `getThemeColor` which retrieves a color from a theme attribute.
+     - **Branch `b`** introduces four methods related to handling saved cards: `removeCardFromSavedCards`, `convertSavedToken`, `filterCardsByClickType`, and `filterMultipleSavedCard`.
+
+   - Since the base is empty, both branches have independently added their own code to the file. There is no actual overlap in the code content, but Git has flagged this as a conflict because both branches added content to the same file.
+
+2. **Evaluate each change:**
+   - **Branch `a`'s method `getThemeColor`** is a utility method for retrieving theme colors. It is likely used in UI-related logic and is a clean, concise implementation.
+   - **Branch `b`'s methods** are related to handling saved card data, filtering, and conversion. These are part of a payment or card management system and are also well-structured and logically sound.
+
+   - Both sets of code are valid and serve different purposes. There is no logical conflict in the code itself, but Git has flagged it due to the file-level conflict.
+
+3. **Understand the intention behind each change:**
+   - **Branch `a`** likely aims to add a UI utility method for retrieving theme colors.
+   - **Branch `b`** likely aims to add functionality for managing saved cards, such as filtering, removing, and converting data structures.
+
+4. **Final decision:**
+   - Since both sets of code are unrelated and serve different purposes, the best resolution is to **combine both sets of code into a single file**.
+   - No code needs to be discarded or modified. The only action required is to manually merge the two sets of code into the same file without any overlap or conflict.
+</cot>
+
+```java
+@ColorInt
+public static int getThemeColor(@NonNull final Context context, @AttrRes final int attributeColor) {
+    final TypedValue value = new TypedValue();
+    context.getTheme().resolveAttribute(attributeColor, value, true);
+    return value.data;
+}
+
+public static List<SavedToken> removeCardFromSavedCards(List<SavedToken> savedTokens, String maskedCard) {
+    List<SavedToken> updatedTokens = new ArrayList<>();
+    for (SavedToken savedToken : savedTokens) {
+        if (!savedToken.getMaskedCard().equals(maskedCard)) {
+            updatedTokens.add(savedToken);
+        }
+    }
+    return updatedTokens;
+}
+
+public static ArrayList<SaveCardRequest> convertSavedToken(List<SavedToken> savedTokens) {
+    ArrayList<SaveCardRequest> cards = new ArrayList<>();
+    if (savedTokens != null && !savedTokens.isEmpty()) {
+        for (SavedToken
+
+### Gold (Ground Truth)
+public static List<SavedToken> removeCardFromSavedCards(List<SavedToken> savedTokens, String maskedCard) {
+        List<SavedToken> updatedTokens = new ArrayList<>();
+        for (SavedToken savedToken : savedTokens) {
+            if (!savedToken.getMaskedCard().equals(maskedCard)) {
+                updatedTokens.add(savedToken);
+            }
+        }
+        return updatedTokens;
+    }
+
+    public static ArrayList<SaveCardRequest> convertSavedToken(List<SavedToken> savedTokens) {
+        ArrayList<SaveCardRequest> cards = new ArrayList<>();
+        if (savedTokens != null && !savedTokens.isEmpty()) {
+            for (SavedToken saved : savedTokens) {
+                cards.add(new SaveCardRequest(saved.getToken(), saved.getMaskedCard(), saved.getTokenType()));
+            }
+        }
+        return cards;
+    }
+
+    public static List<SaveCardRequest> filterCardsByClickType(Context context, List<SaveCardRequest> cards) {
+        MidtransSDK midtransSDK = MidtransSDK.getInstance();
+        ArrayList<SaveCardRequest> filteredCards = new ArrayList<>();
+        if (cards != null && !cards.isEmpty()) {
+            if (midtransSDK.isEnableBuiltInTokenStorage()) {
+                for (SaveCardRequest card : cards) {
+                    if (midtransSDK.getTransactionRequest().getCardClickType().equals(context.getString(R.string.card_click_type_one_click))
+                            && card.getType().equals(context.getString(R.string.saved_card_one_click))) {
+                        filteredCards.add(card);
+                    } else if (midtransSDK.getTransactionRequest().getCardClickType().equals(context.getString(R.string.card_click_type_two_click))
+                            && card.getType().equals(context.getString(R.string.saved_card_two_click))) {
+                        filteredCards.add(card);
+                    }
+                }
+            } else {
+                //if token storage on merchant server then saved cards can be used just for two click
+                String clickType = midtransSDK.getTransactionRequest().getCardClickType();
+                if (!TextUtils.isEmpty(clickType) && clickType.equals(context.getString(R.string.card_click_type_two_click))) {
+                    filteredCards.addAll(cards);
+                }
+            }
+        }
+
+        return filteredCards;
+    }
+
+    public static List<SaveCardRequest> filterMultipleSavedCard(ArrayList<SaveCardRequest> savedCards) {
+        Collections.reverse(savedCards);
+        Set<String> maskedCardSet = new HashSet<>();
+        for (Iterator<SaveCardRequest> it = savedCards.iterator(); it.hasNext(); ) {
+            if (!maskedCardSet.add(it.next().getMaskedCard())) {
+                it.remove();
+            }
+        }
+        return savedCards;
+    }
+
+    @ColorInt
+    public static int getThemeColor(@NonNull final Context context, @AttrRes final int attributeColor) {
+        final TypedValue value = new TypedValue();
+        context.getTheme().resolveAttribute(attributeColor, value, true);
+        return value.data;
+    }
+
+### Diff Type
+A+B
+
+### Note: No code block found in the prediction.

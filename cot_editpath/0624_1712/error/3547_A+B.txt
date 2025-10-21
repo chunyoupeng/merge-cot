@@ -1,0 +1,147 @@
+### Prompt
+<|im_start|>system
+You are a Great Git merge conflict resolver. Merge conflicts occur because both branch a and branch b have modified the same part of the base code in different ways. Your task is to analyze the changes made by a and b relative to base, understand their intentions, and produce a well-reasoned CoT (Chain of Thought) then then answer.<|im_end|>
+<|im_start|>user
+# Conflict
+>>>>>>> a
+BottomBuilder builder = new BottomBuilder(getParentActivity());
+                    builder.addTitle(str);
+                    builder.addItems(
+                            new String[]{LocaleController.getString("Open", R.string.Open), LocaleController.getString("Copy", R.string.Copy), str.startsWith("#") || str.startsWith("$") ? null : LocaleController.getString("ShareQRCode", R.string.ShareQRCode)},
+                            new int[]{R.drawable.baseline_open_in_browser_24, R.drawable.baseline_content_copy_24, R.drawable.wallet_qr}, (which, text, __) -> {
+                                if (which == 0 || which == 2) {
+                                    openClickableLink(str, which == 2);
+
+                                } else if (which == 1) {
+                                    AndroidUtilities.addToClipboard(str);
+                                }
+                                return Unit.INSTANCE;
+                            });
+||||||| base
+BottomSheet.Builder builder = new BottomSheet.Builder(getParentActivity());
+                    builder.setTitle(str);
+                    builder.setItems(new CharSequence[]{LocaleController.getString("Open", R.string.Open), LocaleController.getString("Copy", R.string.Copy)}, (dialog, which) -> {
+                        if (which == 0) {
+                            openClickableLink(str);
+                        } else if (which == 1) {
+                            AndroidUtilities.addToClipboard(str);
+                        }
+                    });
+=======
+BottomSheet.Builder builder = new BottomSheet.Builder(getParentActivity());
+                    builder.setTitle(str);
+                    builder.setItems(new CharSequence[]{LocaleController.getString("Open", R.string.Open), LocaleController.getString("Copy", R.string.Copy)}, (dialog, which) -> {
+                        if (which == 0) {
+                            openClickableLink(str);
+                        } else if (which == 1) {
+                            AndroidUtilities.addToClipboard(str);
+                            if (str.startsWith("@")) {
+                                undoView.showWithAction(0, UndoView.ACTION_USERNAME_COPIED, null);
+                            } else if (str.startsWith("#") || str.startsWith("$")) {
+                                undoView.showWithAction(0, UndoView.ACTION_HASHTAG_COPIED, null);
+                            } else {
+                                undoView.showWithAction(0, UndoView.ACTION_LINK_COPIED, null);
+                            }
+
+                        }
+                    });
+<<<<<<< b
+
+Moreover, we also provide you with the edit sequences, which refer to the token-level modifications from base to a and b, respectively.
+# Edit Sequence
+
+## From base to a
+<REPLACE> BottomSheet <WITH> BottomBuilder)
+<DELETE> . Builder
+<REPLACE> BottomSheet <WITH> BottomBuilder)
+<DELETE> . Builder
+<REPLACE> setTitle <WITH> addTitle)
+<REPLACE> setItems <WITH> addItems)
+<ADD> <newline>
+<REPLACE> CharSequence <WITH> String)
+<ADD> , str . startsWith ( " # " ) | | str . startsWith ( " $ " ) ? null : LocaleController . getString ( " ShareQRCode " , R . string . ShareQRCode ) } , <newline> new int [ ] { R . drawable . baseline_open_in_browser_24 , R . drawable . baseline_content_copy_24 , R . drawable . wallet_qr
+<REPLACE> dialog <WITH> which)
+<REPLACE> which <WITH> text)
+<ADD> , __ | | which = = 2 , which = = 2 <newline> return Unit . INSTANCE ; <newline>
+
+
+## From base to b
+<ADD> if ( str . startsWith ( " @ " ) ) { <newline> undoView . showWithAction ( 0 , UndoView . ACTION_USERNAME_COPIED , null ) ; <newline> } else if ( str . startsWith ( " # " ) | | str . startsWith ( " $ " ) ) { <newline> undoView . showWithAction ( 0 , UndoView . ACTION_HASHTAG_COPIED , null ) ; <newline> } else { <newline> undoView . showWithAction ( 0 , UndoView . ACTION_LINK_COPIED , null ) ; <newline> } <newline> <newline>
+
+
+# CoT guide
+1. Analyze the conflict point(s): what did `a` change compared to `base`? what did `b` change compared to `base`?
+2. Evaluate each change: why should a particular change be kept, discarded, or modified?
+3. Understand the intention behind each change in `a` and `b`.
+4. Final decision: based on code style, business logic, and correctness, determine the appropriate resolution. 
+
+# Output Format:
+You should output two thing: 
+1. the CoT, which should be placed within the <cot></cot> tag.
+2. Final resolution, the answer should be within the ```java and ```\/no_think<|im_end|>
+<|im_start|>asistant
+
+### Model Prediction
+<think>
+
+</think>
+
+<cot>
+1. **Analyze the conflict point(s):**
+   - **Branch `a` changes:**
+     - Replaced `BottomSheet.Builder` with `BottomBuilder`.
+     - Changed `setTitle` to `addTitle`.
+     - Changed `setItems` to `addItems`.
+     - Modified the items array to include a third option "ShareQRCode" conditionally.
+     - Changed the item types from `CharSequence[]` to `String[]`.
+     - Updated the lambda signature and logic to handle the new third option.
+     - Added a return statement `return Unit.INSTANCE;`.
+   - **Branch `b` changes:**
+     - Added logic to show an `undoView` with different actions depending on the prefix of the copied string (`@`, `#`, `$`).
+     - This logic is added inside the `Copy` case of the lambda.
+
+2. **Evaluate each change:**
+   - **Branch `a`:**
+     - The changes suggest a refactoring from `BottomSheet.Builder` to a new `BottomBuilder` class, possibly for a redesigned UI component.
+     - The addition of a "ShareQRCode" option is a new feature, likely to allow users to share a QR code of the link.
+     - The lambda signature and return type suggest a different API design, possibly for a Kotlin-style builder pattern.
+   - **Branch `b`:**
+     - The logic added is for user feedback (via `undoView`) after copying text, which is a UX improvement.
+     - This logic is conditional and does not interfere with the existing functionality of opening or copying the link.
+
+3. **Understand the intention behind each change:**
+   - **Branch `a`'s intention:** To refactor the UI component and add a new feature (QR code sharing).
+   - **Branch `b`'s intention:** To enhance user feedback after copying text, improving the user experience.
+
+4. **Final decision:**
+   - The changes in `a` and `b` are orthogonal: one is a UI refactoring and feature addition, the other is a UX enhancement.
+   - The `BottomBuilder` and its new API are likely incompatible with the `undoView` logic from `b`, as the lambda signature and return type differ.
+   - To preserve both changes,
+
+### Gold (Ground Truth)
+BottomBuilder builder = new BottomBuilder(getParentActivity());
+                    builder.addTitle(str);
+                    builder.addItems(
+                            new String[]{LocaleController.getString("Open", R.string.Open), LocaleController.getString("Copy", R.string.Copy), str.startsWith("#") || str.startsWith("$") ? null : LocaleController.getString("ShareQRCode", R.string.ShareQRCode)},
+                            new int[]{R.drawable.baseline_open_in_browser_24, R.drawable.baseline_content_copy_24, R.drawable.wallet_qr}, (which, text, __) -> {
+                                if (which == 0 || which == 2) {
+                                    openClickableLink(str, which == 2);
+
+                                } else if (which == 1) {
+                                    AndroidUtilities.addToClipboard(str);
+                                    if (str.startsWith("@")) {
+                                        undoView.showWithAction(0, UndoView.ACTION_USERNAME_COPIED, null);
+                                    } else if (str.startsWith("#") || str.startsWith("$")) {
+                                        undoView.showWithAction(0, UndoView.ACTION_HASHTAG_COPIED, null);
+                                    } else {
+                                        undoView.showWithAction(0, UndoView.ACTION_LINK_COPIED, null);
+                                    }
+
+                                }
+                                return Unit.INSTANCE;
+                            });
+
+### Diff Type
+A+B
+
+### Note: No code block found in the prediction.

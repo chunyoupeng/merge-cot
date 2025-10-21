@@ -1,0 +1,93 @@
+### Prompt
+<|im_start|>system
+You are a Great Git merge conflict resolver. Merge conflicts occur because both branch a and branch b have modified the same part of the base code in different ways. Your task is to analyze the changes made by a and b relative to base, understand their intentions, and produce a well-reasoned CoT (Chain of Thought) then then answer.<|im_end|>
+<|im_start|>user
+# Conflict
+>>>>>>> a
+final ServiceContext context = createServiceContext(locale.getISO3Language(),
+            formatType, request.getNativeRequest(HttpServletRequest.class));
+        AbstractMetadata metadata = ApiUtils.canViewRecord(metadataUuid, servletRequest);
+||||||| base
+final ServiceContext context = createServiceContext(locale.getISO3Language(),
+            formatType, request.getNativeRequest(HttpServletRequest.class));
+        Metadata metadata = ApiUtils.canViewRecord(metadataUuid, servletRequest);
+=======
+final String language = LanguageUtils.locale2gnCode(locale.getISO3Language());
+        final ServiceContext context = createServiceContext(
+            language,
+            formatType,
+            request.getNativeRequest(HttpServletRequest.class));
+        Metadata metadata = ApiUtils.canViewRecord(metadataUuid, servletRequest);
+<<<<<<< b
+
+Moreover, we also provide you with the edit sequences, which refer to the token-level modifications from base to a and b, respectively.
+# Edit Sequence
+
+## From base to a
+<REPLACE> Metadata <WITH> AbstractMetadata)
+
+
+## From base to b
+<ADD> final String language = LanguageUtils . locale2gnCode ( locale . getISO3Language ( ) ) ; <newline>
+<REPLACE> locale <WITH> <newline>)
+<REPLACE> . <WITH> language)
+<DELETE> getISO3Language ( )
+<ADD> <newline>
+
+
+# CoT guide
+1. Analyze the conflict point(s): what did `a` change compared to `base`? what did `b` change compared to `base`?
+2. Evaluate each change: why should a particular change be kept, discarded, or modified?
+3. Understand the intention behind each change in `a` and `b`.
+4. Final decision: based on code style, business logic, and correctness, determine the appropriate resolution. 
+
+# Output Format:
+You should output two thing: 
+1. the CoT, which should be placed within the <cot></cot> tag.
+2. Final resolution, the answer should be within the ```java and ```\/no_think<|im_end|>
+<|im_start|>asistant
+
+### Model Prediction
+<think>
+
+</think>
+
+<cot>
+1. **Analyze the conflict point(s):**
+   - **Branch a** changed the type of `metadata` from `Metadata` to `AbstractMetadata`.
+   - **Branch b** introduced a new variable `language` by calling `LanguageUtils.locale2gnCode(locale.getISO3Language())`, and then used `language` instead of `locale.getISO3Language()` in the `createServiceContext` method.
+
+2. **Evaluate each change:**
+   - **Branch a's change** is a type change from `Metadata` to `AbstractMetadata`. This likely reflects a refactoring where `AbstractMetadata` is a more general or abstract version of `Metadata`, possibly to allow for polymorphism or to align with a new class hierarchy.
+   - **Branch b's change** introduces a new way of handling the language code by converting the ISO 3-letter code to a GN code using `LanguageUtils.locale2gnCode()`. This suggests a requirement to use a different language code format in the `ServiceContext`.
+
+3. **Understand the intention behind each change:**
+   - **Branch a** likely intends to generalize the type of `metadata` to allow for more flexibility or to support a broader set of metadata types.
+   - **Branch b** likely intends to adapt the language code format used in the `ServiceContext` to a new standard or requirement, possibly for compatibility with another system or API.
+
+4. **Final decision:**
+   - Both changes are logically independent and address different aspects of the code: one is a type change, and the other is a logic change for language code formatting.
+   - The `language` variable introduced in branch b is necessary for the new logic, and the type change in branch a is necessary for the new type system.
+   - Therefore, both changes should be combined: use the `language` variable from branch b and apply the type change from branch a.
+</cot>
+
+```java
+final String language = LanguageUtils.locale2gnCode(locale.getISO3Language());
+final ServiceContext context = createServiceContext(
+    language,
+    formatType,
+    request.getNativeRequest(HttpServletRequest.class));
+AbstractMetadata metadata = ApiUtils.canViewRecord(metadataUuid, servletRequest);
+```
+
+### Gold (Ground Truth)
+final String language = LanguageUtils.locale2gnCode(locale.getISO3Language());
+        final ServiceContext context = createServiceContext(
+            language,
+            formatType,
+            request.getNativeRequest(HttpServletRequest.class));
+        AbstractMetadata metadata = ApiUtils.canViewRecord(metadataUuid, servletRequest);
+
+### Diff Type
+A+B
+

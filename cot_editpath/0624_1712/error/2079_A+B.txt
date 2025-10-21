@@ -1,0 +1,88 @@
+### Prompt
+<|im_start|>system
+You are a Great Git merge conflict resolver. Merge conflicts occur because both branch a and branch b have modified the same part of the base code in different ways. Your task is to analyze the changes made by a and b relative to base, understand their intentions, and produce a well-reasoned CoT (Chain of Thought) then then answer.<|im_end|>
+<|im_start|>user
+# Conflict
+>>>>>>> a
+is(snippet(asciidoctor()).withContents(
+						codeBlock(asciidoctor(), "bash").content(
+								"$ curl "
+										+ "'http://localhost:8080/?foo=bar' -i -X POST "
+										+ "-H 'Accept: application/json' -d 'a=alpha'"))));
+||||||| base
+is(snippet().withContents(
+						codeBlock("bash").content(
+								"$ curl "
+										+ "'http://localhost:8080/?foo=bar' -i -X POST "
+										+ "-H 'Accept: application/json' -d 'a=alpha'"))));
+=======
+is(snippet().withContents(codeBlock("bash").content(
+						"$ curl " + "'http://localhost:8080/?foo=bar' -i -X POST "
+								+ "-H 'Accept: application/json' -d 'a=alpha'"))));
+<<<<<<< b
+
+Moreover, we also provide you with the edit sequences, which refer to the token-level modifications from base to a and b, respectively.
+# Edit Sequence
+
+## From base to a
+<ADD> asciidoctor ( ) asciidoctor ( ) ,
+
+
+## From base to b
+<DELETE> <newline> <newline>
+
+
+# CoT guide
+1. Analyze the conflict point(s): what did `a` change compared to `base`? what did `b` change compared to `base`?
+2. Evaluate each change: why should a particular change be kept, discarded, or modified?
+3. Understand the intention behind each change in `a` and `b`.
+4. Final decision: based on code style, business logic, and correctness, determine the appropriate resolution. 
+
+# Output Format:
+You should output two thing: 
+1. the CoT, which should be placed within the <cot></cot> tag.
+2. Final resolution, the answer should be within the ```java and ```\/no_think<|im_end|>
+<|im_start|>asistant
+
+### Model Prediction
+<think>
+
+</think>
+
+<cot>
+1. **Analyze the conflict point(s):**
+   - **Branch `a`** added `asciidoctor()` in two places: once for `snippet(asciidoctor())` and once for `codeBlock(asciidoctor(), "bash")`.
+   - **Branch `b`** removed two newline characters, which likely means it simplified the formatting by removing unnecessary line breaks.
+   - The base version uses `snippet()` and `codeBlock("bash")` without specifying the `asciidoctor()` format.
+
+2. **Evaluate each change:**
+   - **Branch `a`'s change:** Adding `asciidoctor()` explicitly specifies the format of the code block, which is useful for rendering in documentation tools that support AsciiDoctor. This change is likely intended to improve clarity and compatibility with AsciiDoctor rendering.
+   - **Branch `b`'s change:** Removing newline characters is a formatting cleanup. It doesn't affect the logic or functionality but makes the code more compact and readable in some contexts.
+
+3. **Understand the intention behind each change:**
+   - **Branch `a`** aims to enhance the code block's metadata for better rendering in AsciiDoctor-based tools.
+   - **Branch `b`** aims to clean up the formatting by removing unnecessary whitespace.
+
+4. **Final decision:**
+   - The `asciidoctor()` specification from branch `a` is a meaningful and useful addition for rendering purposes and should be retained.
+   - The newline removal from branch `b` is a minor formatting change that doesn't conflict with the addition from `a`. It can be applied after incorporating the `asciidoctor()` changes.
+   - Therefore, the resolution should include both changes: use `asciidoctor()` for the snippet and code block, and remove the extra newlines for cleaner formatting.
+</cot>
+
+```java
+is(snippet(asciidoctor()).withContents(
+        codeBlock(asciidoctor(), "bash").content(
+                "$ curl "
+                        + "'http://localhost:8080/?foo=bar' -i -X POST "
+                        + "-H 'Accept: application/json' -d 'a=alpha'")));
+```
+
+### Gold (Ground Truth)
+is(snippet(asciidoctor())
+						.withContents(codeBlock(asciidoctor(), "bash").content("$ curl "
+								+ "'http://localhost:8080/?foo=bar' -i -X POST "
+								+ "-H 'Accept: application/json' -d 'a=alpha'"))));
+
+### Diff Type
+A+B
+

@@ -1,0 +1,83 @@
+### Prompt
+<|im_start|>system
+You are a Great Git merge conflict resolver. Merge conflicts occur because both branch a and branch b have modified the same part of the base code in different ways. Your task is to analyze the changes made by a and b relative to base, understand their intentions, and produce a well-reasoned CoT (Chain of Thought) then then answer.<|im_end|>
+<|im_start|>user
+# Conflict
+>>>>>>> a
+ShadowIntent fakeIntent = (ShadowIntent) DogfoodRobolectricTestRunner.shadowFor(intent);
+        assertSame(parcelable, fakeIntent.extras.get("foo"));
+        assertSame(parcelable, fakeIntent.getParcelableExtra("foo"));
+||||||| base
+ShadowIntent fakeIntent = (ShadowIntent) DogfoodRobolectricTestRunner.proxyFor(intent);
+        assertSame(parcelable, fakeIntent.extras.get("foo"));
+        assertSame(parcelable, fakeIntent.getParcelableExtra("foo"));
+=======
+ShadowIntent shadowIntent = (ShadowIntent) DogfoodRobolectricTestRunner.proxyFor(intent);
+        assertSame(parcelable, shadowIntent.extras.get("foo"));
+        assertSame(parcelable, shadowIntent.getParcelableExtra("foo"));
+<<<<<<< b
+
+Moreover, we also provide you with the edit sequences, which refer to the token-level modifications from base to a and b, respectively.
+# Edit Sequence
+
+## From base to a
+<REPLACE> proxyFor <WITH> shadowFor)
+
+
+## From base to b
+<REPLACE> fakeIntent <WITH> shadowIntent)
+<REPLACE> fakeIntent <WITH> shadowIntent)
+<REPLACE> fakeIntent <WITH> shadowIntent)
+
+
+# CoT guide
+1. Analyze the conflict point(s): what did `a` change compared to `base`? what did `b` change compared to `base`?
+2. Evaluate each change: why should a particular change be kept, discarded, or modified?
+3. Understand the intention behind each change in `a` and `b`.
+4. Final decision: based on code style, business logic, and correctness, determine the appropriate resolution. 
+
+# Output Format:
+You should output two thing: 
+1. the CoT, which should be placed within the <cot></cot> tag.
+2. Final resolution, the answer should be within the ```java and ```\/no_think<|im_end|>
+<|im_start|>asistant
+
+### Model Prediction
+<think>
+
+</think>
+
+<cot>
+1. **Analyze the conflict point(s):**
+   - In the base code, the variable is named `fakeIntent`, and it is initialized using `proxyFor(intent)`.
+   - In branch `a`, the method `proxyFor` is replaced with `shadowFor`, but the variable name remains `fakeIntent`.
+   - In branch `b`, the variable name is changed from `fakeIntent` to `shadowIntent`, but the method `proxyFor` is kept unchanged.
+
+2. **Evaluate each change:**
+   - **Branch a's change:** Replacing `proxyFor` with `shadowFor` suggests a change in the underlying implementation or shadowing mechanism. This might be necessary if the test framework has been updated to use a different method for shadowing.
+   - **Branch b's change:** Renaming the variable from `fakeIntent` to `shadowIntent` is likely for clarity or consistency with the new method name `shadowFor`. This is a naming convention change that aligns the variable name with the method used to create it.
+
+3. **Understand the intention behind each change:**
+   - **Branch a's intention:** To update the method used to create the shadow object, likely due to a framework or API change.
+   - **Branch b's intention:** To rename the variable to better reflect its purpose or align with the naming convention used in the codebase.
+
+4. **Final decision:**
+   - The method `proxyFor` should be replaced with `shadowFor` as in branch `a` to reflect the updated framework usage.
+   - The variable name should be updated to `shadowIntent` as in branch `b` to maintain consistency and clarity.
+   - Combining both changes results in a clean and consistent implementation that reflects the updated framework and naming conventions.
+</cot>
+
+```java
+ShadowIntent shadowIntent = (ShadowIntent) DogfoodRobolectricTestRunner.shadowFor(intent);
+        assertSame(parcelable, shadowIntent.extras.get("foo"));
+        assertSame(parcelable, shadowIntent.getParcelableExtra("foo"));
+```
+
+### Gold (Ground Truth)
+ShadowIntent shadowIntent = (ShadowIntent) DogfoodRobolectricTestRunner.shadowFor(intent);
+        assertSame(parcelable, shadowIntent.extras.get("foo"));
+        assertSame(parcelable, shadowIntent.getParcelableExtra("foo"));
+
+### Diff Type
+A+B
+

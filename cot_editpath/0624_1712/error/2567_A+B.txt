@@ -1,0 +1,221 @@
+### Prompt
+<|im_start|>system
+You are a Great Git merge conflict resolver. Merge conflicts occur because both branch a and branch b have modified the same part of the base code in different ways. Your task is to analyze the changes made by a and b relative to base, understand their intentions, and produce a well-reasoned CoT (Chain of Thought) then then answer.<|im_end|>
+<|im_start|>user
+# Conflict
+>>>>>>> a
+@Test
+    @Category(IntegrationTest.class)
+    public void createPropertiesMetadataSucceeds() {
+        final String key = "/testKey";
+        final String value = "testValue";
+
+        BoxAPIConnection api = new BoxAPIConnection(TestConfig.getAccessToken());
+        Metadata md = new Metadata();
+        md.add(key, value);
+        BoxFolder rootFolder = BoxFolder.getRootFolder(api);
+        BoxFolder folder = rootFolder.createFolder("[createPropertiesMetadataSucceeds] Metadata Folder").getResource();
+        Metadata createdMD = folder.createMetadata(md);
+
+        assertThat(createdMD.get(key), is(equalTo(value)));
+        folder.delete(false);
+    }
+
+    @Test
+    @Category(IntegrationTest.class)
+    public void deletePropertiesMetadataSucceeds() {
+        final String key = "/testKey";
+        final String value = "testValue";
+
+        BoxAPIConnection api = new BoxAPIConnection(TestConfig.getAccessToken());
+        Metadata md = new Metadata();
+        md.add(key, value);
+        BoxFolder rootFolder = BoxFolder.getRootFolder(api);
+        BoxFolder folder = rootFolder.createFolder("[createPropertiesMetadataSucceeds] Metadata Folder").getResource();
+        folder.createMetadata(md);
+        folder.deleteMetadata();
+
+        try {
+            Metadata actualMD = folder.getMetadata();
+            fail();
+        } catch (BoxAPIException e) {
+            assertThat(e.getResponseCode(), is(equalTo(404)));
+        } finally {
+            folder.delete(false);
+        }
+    }
+||||||| base
+
+=======
+/**
+     * Verifies the fix for issue #325
+     */
+    @Test
+    @Category(IntegrationTest.class)
+    public void sharedLinkInfoHasEffectiveAccess() {
+        BoxAPIConnection api = new BoxAPIConnection(TestConfig.getAccessToken());
+        BoxFolder rootFolder = BoxFolder.getRootFolder(api);
+        BoxFolder folder = rootFolder.createFolder("[sharedLinkInfoHasEffectiveAccess] Test Folder").getResource();
+        BoxSharedLink sharedLink = folder.createSharedLink(BoxSharedLink.Access.OPEN, null, null);
+
+        assertThat(sharedLink, Matchers.<BoxSharedLink>hasProperty("effectiveAccess"));
+        assertThat(sharedLink.getEffectiveAccess(), equalTo(BoxSharedLink.Access.OPEN));
+
+        folder.delete(true);
+    }
+<<<<<<< b
+
+Moreover, we also provide you with the edit sequences, which refer to the token-level modifications from base to a and b, respectively.
+# Edit Sequence
+
+## From base to a
+The entire content comes from it, as the base is empty.
+
+
+## From base to b
+The entire content comes from it, as the base is empty.
+
+
+# CoT guide
+1. Analyze the conflict point(s): what did `a` change compared to `base`? what did `b` change compared to `base`?
+2. Evaluate each change: why should a particular change be kept, discarded, or modified?
+3. Understand the intention behind each change in `a` and `b`.
+4. Final decision: based on code style, business logic, and correctness, determine the appropriate resolution. 
+
+# Output Format:
+You should output two thing: 
+1. the CoT, which should be placed within the <cot></cot> tag.
+2. Final resolution, the answer should be within the ```java and ```\/no_think<|im_end|>
+<|im_start|>asistant
+
+### Model Prediction
+<think>
+
+</think>
+
+<cot>
+1. **Analyze the conflict point(s):**
+   - The base contains a single test method `sharedLinkInfoHasEffectiveAccess`, which verifies the presence and correctness of the `effectiveAccess` property in a shared link.
+   - Branch `a` introduces two new test methods: `createPropertiesMetadataSucceeds` and `deletePropertiesMetadataSucceeds`, which test the creation and deletion of metadata on a Box folder.
+   - Branch `b` retains the original test method from the base but does not introduce any new tests.
+
+2. **Evaluate each change:**
+   - **Branch `a`** adds two new integration tests for metadata operations. These tests are logically distinct from the shared link test in the base and serve a different purpose.
+   - **Branch `b`** keeps the original test intact, which is valid and important for verifying shared link functionality.
+
+3. **Understand the intention behind each change:**
+   - The intention of **branch `a`** is to add comprehensive testing for metadata creation and deletion, which is a core feature of the Box API.
+   - The intention of **branch `b`** is to preserve the existing test for shared link behavior, ensuring that this functionality remains verified.
+
+4. **Final decision:**
+   - Since the two branches are adding or preserving tests for different features, there is no functional overlap or conflict.
+   - The best resolution is to **combine both sets of tests**, as they serve different purposes and are both valid and important for the test suite.
+   - No code changes are needed beyond merging the two sets of test methods.
+</cot>
+
+```java
+/**
+ * Verifies the fix for issue #325
+ */
+@Test
+@Category(IntegrationTest.class)
+public void sharedLinkInfoHasEffectiveAccess() {
+    BoxAPIConnection api = new BoxAPIConnection(TestConfig.getAccessToken());
+    BoxFolder rootFolder = BoxFolder.getRootFolder(api);
+    BoxFolder folder = rootFolder.createFolder("[sharedLinkInfoHasEffectiveAccess] Test Folder").getResource();
+    BoxSharedLink sharedLink = folder.createSharedLink(BoxSharedLink.Access.OPEN, null, null);
+
+    assertThat(sharedLink, Matchers.<BoxSharedLink>hasProperty("effectiveAccess"));
+    assertThat(sharedLink.getEffectiveAccess(), equalTo(BoxSharedLink.Access.OPEN));
+
+    folder.delete(true);
+}
+
+@Test
+@Category(IntegrationTest.class)
+public void createPropertiesMetadataSucceeds() {
+    final String key = "/testKey";
+    final String value = "testValue";
+
+    BoxAPIConnection api = new BoxAPIConnection(TestConfig.getAccessToken());
+    Metadata md = new Metadata();
+    md.add(key, value);
+    BoxFolder rootFolder = BoxFolder.getRootFolder(api);
+    BoxFolder folder = rootFolder.createFolder("[createPropertiesMetadataSucceeds] Metadata Folder").getResource();
+    Metadata createdMD = folder.createMetadata(md);
+
+    assertThat(createdMD.get(key), is(equalTo(value)));
+    folder.delete(false);
+}
+
+@Test
+@Category(IntegrationTest.class)
+public void deletePropertiesMetadataSucceeds() {
+    final String key = "/testKey";
+    final String value = "testValue";
+
+    BoxAPIConnection api = new BoxAPI
+
+### Gold (Ground Truth)
+@Test
+    @Category(IntegrationTest.class)
+    public void createPropertiesMetadataSucceeds() {
+        final String key = "/testKey";
+        final String value = "testValue";
+
+        BoxAPIConnection api = new BoxAPIConnection(TestConfig.getAccessToken());
+        Metadata md = new Metadata();
+        md.add(key, value);
+        BoxFolder rootFolder = BoxFolder.getRootFolder(api);
+        BoxFolder folder = rootFolder.createFolder("[createPropertiesMetadataSucceeds] Metadata Folder").getResource();
+        Metadata createdMD = folder.createMetadata(md);
+
+        assertThat(createdMD.get(key), is(equalTo(value)));
+        folder.delete(false);
+    }
+
+    @Test
+    @Category(IntegrationTest.class)
+    public void deletePropertiesMetadataSucceeds() {
+        final String key = "/testKey";
+        final String value = "testValue";
+
+        BoxAPIConnection api = new BoxAPIConnection(TestConfig.getAccessToken());
+        Metadata md = new Metadata();
+        md.add(key, value);
+        BoxFolder rootFolder = BoxFolder.getRootFolder(api);
+        BoxFolder folder = rootFolder.createFolder("[createPropertiesMetadataSucceeds] Metadata Folder").getResource();
+        folder.createMetadata(md);
+        folder.deleteMetadata();
+
+        try {
+            Metadata actualMD = folder.getMetadata();
+            fail();
+        } catch (BoxAPIException e) {
+            assertThat(e.getResponseCode(), is(equalTo(404)));
+        } finally {
+            folder.delete(false);
+        }
+    }
+
+    /**
+     * Verifies the fix for issue #325
+     */
+    @Test
+    @Category(IntegrationTest.class)
+    public void sharedLinkInfoHasEffectiveAccess() {
+        BoxAPIConnection api = new BoxAPIConnection(TestConfig.getAccessToken());
+        BoxFolder rootFolder = BoxFolder.getRootFolder(api);
+        BoxFolder folder = rootFolder.createFolder("[sharedLinkInfoHasEffectiveAccess] Test Folder").getResource();
+        BoxSharedLink sharedLink = folder.createSharedLink(BoxSharedLink.Access.OPEN, null, null);
+
+        assertThat(sharedLink, Matchers.<BoxSharedLink>hasProperty("effectiveAccess"));
+        assertThat(sharedLink.getEffectiveAccess(), equalTo(BoxSharedLink.Access.OPEN));
+
+        folder.delete(true);
+    }
+
+### Diff Type
+A+B
+
+### Note: No code block found in the prediction.

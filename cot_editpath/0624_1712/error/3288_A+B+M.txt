@@ -1,0 +1,175 @@
+### Prompt
+<|im_start|>system
+You are a Great Git merge conflict resolver. Merge conflicts occur because both branch a and branch b have modified the same part of the base code in different ways. Your task is to analyze the changes made by a and b relative to base, understand their intentions, and produce a well-reasoned CoT (Chain of Thought) then then answer.<|im_end|>
+<|im_start|>user
+# Conflict
+>>>>>>> a
+
+||||||| base
+// Please don't delete this method!
+    // I need some way to trace actions when working with SD card features - Robb
+    public static void createFileWithMsg(@Nonnull String file, String msg) {
+        try {
+            FileHelper.saveBinaryInFile(new File(getDefaultDir(HentoidApp.getInstance(), ""), file + ".txt"), (null == msg) ? "NULL".getBytes() : msg.getBytes());
+            Timber.i(">>file %s -> %s", file, msg);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Nullable
+    public static DocumentFile getDocumentFile(@Nonnull final File file, final boolean isDirectory) {
+        return FileUtil.getDocumentFile(file, isDirectory);
+    }
+=======
+// Please don't delete this method!
+    // I need some way to trace actions when working with SD card features - Robb
+    public static void createFileWithMsg(@NonNull String file, String msg) {
+        try {
+            FileHelper.saveBinaryInFile(new File(getDefaultDir(HentoidApp.getInstance(), ""), file + ".txt"), (null == msg) ? "NULL".getBytes() : msg.getBytes());
+            Timber.i(">>file %s -> %s", file, msg);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Nullable
+    public static DocumentFile getDocumentFile(@NonNull final File file, final boolean isDirectory) {
+        return FileUtil.getDocumentFile(file, isDirectory);
+    }
+<<<<<<< b
+
+Moreover, we also provide you with the edit sequences, which refer to the token-level modifications from base to a and b, respectively.
+# Edit Sequence
+
+## From base to a
+All content from the base has been removed
+
+
+## From base to b
+<REPLACE> Nonnull <WITH> NonNull)
+<REPLACE> Nonnull <WITH> NonNull)
+
+
+# CoT guide
+1. Analyze the conflict point(s): what did `a` change compared to `base`? what did `b` change compared to `base`?
+2. Evaluate each change: why should a particular change be kept, discarded, or modified?
+3. Understand the intention behind each change in `a` and `b`.
+4. Final decision: based on code style, business logic, and correctness, determine the appropriate resolution. 
+
+# Output Format:
+You should output two thing: 
+1. the CoT, which should be placed within the <cot></cot> tag.
+2. Final resolution, the answer should be within the ```java and ```\/no_think<|im_end|>
+<|im_start|>asistant
+
+### Model Prediction
+<think>
+
+</think>
+
+<cot>
+1. **Analyze the conflict point(s):**
+   - The conflict is between two branches, `a` and `b`, both of which are modifying the same code block.
+   - From the base to `a`: All content from the base has been removed.
+   - From the base to `b`: Two `@Nonnull` annotations are replaced with `@NonNull`.
+
+2. **Evaluate each change:**
+   - **Branch `a`:** It removes all the code in the block. This could indicate a complete rewrite or removal of the method, but it's unclear why this was done without replacement.
+   - **Branch `b`:** It updates the annotations from `@Nonnull` to `@NonNull`. This is a stylistic or compatibility change, likely to align with a different annotation style (e.g., Android's `@NonNull` vs. a custom `@Nonnull`).
+
+3. **Understand the intention behind each change:**
+   - **Branch `a`:** The intention is unclear. Removing the code entirely might be a mistake or a deliberate action to remove functionality.
+   - **Branch `b`:** The intention is to standardize or modernize the code by using `@NonNull`, which is a common annotation in Android development.
+
+4. **Final decision:**
+   - Since branch `a` removes all the code, it's likely not the desired outcome unless the code is no longer needed.
+   - Branch `b` makes a minor but meaningful change to align with a standard annotation.
+   - Therefore, the best resolution is to keep the code from branch `b` and discard the changes from branch `a` (i.e., do not remove the code).
+</cot>
+
+```java
+// Please don't delete this method!
+// I need some way to trace actions when working with SD card features - Robb
+public static void createFileWithMsg(@NonNull String file, String msg) {
+    try {
+        FileHelper.saveBinaryInFile(new File(getDefaultDir(HentoidApp.getInstance(), ""), file + ".txt"), (null == msg) ? "NULL".getBytes() : msg.getBytes());
+        Timber.i(">>file %s -> %s", file, msg);
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+}
+
+@Nullable
+public static DocumentFile getDocumentFile(@NonNull final File file, final boolean isDirectory) {
+    return FileUtil.getDocumentFile(file, isDirectory);
+}
+```
+
+### Gold (Ground Truth)
+public static void shareFile(final @NonNull Context context, final @NonNull DocumentFile f, final @NonNull String title) {
+        Intent sharingIntent = new Intent(Intent.ACTION_SEND);
+        sharingIntent.setType("text/*");
+        sharingIntent.putExtra(Intent.EXTRA_SUBJECT, title);
+        sharingIntent.putExtra(Intent.EXTRA_STREAM, f.getUri());
+        context.startActivity(Intent.createChooser(sharingIntent, context.getString(R.string.send_to)));
+    }
+
+    public static List<DocumentFile> listFiles(@NonNull DocumentFile parent, FileFilter filter) {
+        List<DocumentFile> result = new ArrayList<>();
+
+        DocumentFile[] files = parent.listFiles();
+        if (filter != null)
+            for (DocumentFile file : files)
+                if (filter.accept(file)) result.add(file);
+
+        return result;
+    }
+
+    public static List<DocumentFile> listFolders(@NonNull Context context, @NonNull DocumentFile parent) {
+        return FileUtil.listFolders(context, parent, null);
+    }
+
+    @Nullable
+    public static DocumentFile findFolder(@NonNull Context context, @NonNull DocumentFile parent, @NonNull String subfolderName) {
+        //List<DocumentFile> result = listFiles(parent, f -> f.isDirectory() && f.getName() != null && f.getName().equalsIgnoreCase(subfolderName));
+        List<DocumentFile> result = FileUtil.listFolders(context, parent, subfolderName);
+        if (!result.isEmpty()) return result.get(0);
+        else return null;
+    }
+
+    @Nullable
+    public static DocumentFile findFile(@NonNull Context context, @NonNull DocumentFile parent, @NonNull String fileName) {
+        //List<DocumentFile> result = listFiles(parent, f -> f.isFile() && f.getName() != null && f.getName().equalsIgnoreCase(fileName));
+        List<DocumentFile> result = FileUtil.listFiles(context, parent, fileName);
+        if (!result.isEmpty()) return result.get(0);
+        else return null;
+    }
+
+    @Nullable
+    public static DocumentFile findDocumentFile(@NonNull Context context, @NonNull DocumentFile parent, @NonNull String documentFileName) {
+        //List<DocumentFile> result = listFiles(parent, f -> f.isFile() && f.getName() != null && f.getName().equalsIgnoreCase(fileName));
+        List<DocumentFile> result = FileUtil.listDocumentFiles(context, parent, documentFileName);
+        if (!result.isEmpty()) return result.get(0);
+        else return null;
+    }
+
+    // Please don't delete this method!
+    // I need some way to trace actions when working with SD card features - Robb
+    public static void createFileWithMsg(@NonNull String file, String msg) {
+        try {
+            FileHelper.saveBinaryInFile(new File(getDefaultDir(HentoidApp.getInstance(), ""), file + ".txt"), (null == msg) ? "NULL".getBytes() : msg.getBytes());
+            Timber.i(">>file %s -> %s", file, msg);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Nullable
+    public static DocumentFile getDocumentFile(@NonNull final File file, final boolean isDirectory) {
+        return FileUtil.getDocumentFile(file, isDirectory);
+    }
+
+### Diff Type
+A+B+M
+

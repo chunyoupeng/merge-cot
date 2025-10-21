@@ -1,0 +1,260 @@
+### Prompt
+<|im_start|>system
+You are a Great Git merge conflict resolver. Merge conflicts occur because both branch a and branch b have modified the same part of the base code in different ways. Your task is to analyze the changes made by a and b relative to base, understand their intentions, and produce a well-reasoned CoT (Chain of Thought) then then answer.<|im_end|>
+<|im_start|>user
+# Conflict
+>>>>>>> a
+@Override
+    protected void onDestroy() {
+        super.onDestroy();
+        userStatusPresenter.detachView();
+    }
+||||||| base
+
+=======
+@Override
+    public void onCommentSelected(List<QiscusComment> selectedComments) {
+        boolean hasCheckedItems = selectedComments.size() > 0;
+        if (hasCheckedItems && actionMode == null) {
+            actionMode = startSupportActionMode(this);
+        } else if (!hasCheckedItems && actionMode != null) {
+            actionMode.finish();
+        }
+
+        if (actionMode != null) {
+            actionMode.setTitle(selectedComments.size() + " selected");
+        }
+    }
+
+    @Override
+    public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+        mode.getMenuInflater().inflate(R.menu.comment_action, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+        if (Build.VERSION.SDK_INT < 11) {
+            MenuItemCompat.setShowAsAction(menu.findItem(R.id.action_copy), MenuItemCompat.SHOW_AS_ACTION_NEVER);
+            MenuItemCompat.setShowAsAction(menu.findItem(R.id.action_share), MenuItemCompat.SHOW_AS_ACTION_NEVER);
+        } else {
+            menu.findItem(R.id.action_copy).setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
+            menu.findItem(R.id.action_share).setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
+        }
+
+        return true;
+    }
+
+    @Override
+    public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+        QiscusChatFragment fragment = (QiscusChatFragment) getSupportFragmentManager()
+                .findFragmentByTag(QiscusChatFragment.class.getName());
+        if (fragment == null) {
+            mode.finish();
+            return false;
+        }
+
+        List<QiscusComment> selectedComments = fragment.getSelectedComments();
+        int i = item.getItemId();
+        String text = "";
+        for (QiscusComment qiscusComment : selectedComments) {
+            text += qiscusComment.getSender() + ": ";
+            text += qiscusComment.isAttachment() ? qiscusComment.getAttachmentName() : qiscusComment.getMessage();
+            text += "\n";
+        }
+
+        if (i == R.id.action_copy) {
+            ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+            ClipData clip = ClipData.newPlainText(getString(R.string.chat_activity_label_clipboard), text);
+            clipboard.setPrimaryClip(clip);
+            Toast.makeText(this, selectedComments.size() + " messages copied!", Toast.LENGTH_SHORT).show();
+            mode.finish();
+        } else if (i == R.id.action_share) {
+            Intent intent = new Intent(Intent.ACTION_SEND);
+            intent.setType("text/plain");
+            intent.putExtra(Intent.EXTRA_SUBJECT, "Messages");
+            intent.putExtra(Intent.EXTRA_TEXT, text);
+            startActivity(Intent.createChooser(intent, "Share"));
+            mode.finish();
+        }
+        return false;
+    }
+
+    @Override
+    public void onDestroyActionMode(ActionMode mode) {
+        actionMode = null;
+        QiscusChatFragment fragment = (QiscusChatFragment) getSupportFragmentManager()
+                .findFragmentByTag(QiscusChatFragment.class.getName());
+        if (fragment != null) {
+            fragment.clearSelectedComments();
+        }
+    }
+<<<<<<< b
+
+Moreover, we also provide you with the edit sequences, which refer to the token-level modifications from base to a and b, respectively.
+# Edit Sequence
+
+## From base to a
+The entire content comes from it, as the base is empty.
+
+
+## From base to b
+The entire content comes from it, as the base is empty.
+
+
+# CoT guide
+1. Analyze the conflict point(s): what did `a` change compared to `base`? what did `b` change compared to `base`?
+2. Evaluate each change: why should a particular change be kept, discarded, or modified?
+3. Understand the intention behind each change in `a` and `b`.
+4. Final decision: based on code style, business logic, and correctness, determine the appropriate resolution. 
+
+# Output Format:
+You should output two thing: 
+1. the CoT, which should be placed within the <cot></cot> tag.
+2. Final resolution, the answer should be within the ```java and ```\/no_think<|im_end|>
+<|im_start|>asistant
+
+### Model Prediction
+<think>
+
+</think>
+
+<cot>
+1. **Analyze the conflict point(s):**
+   - The conflict is between two branches, `a` and `b`, both of which have added new code to the same file, but in different parts.
+   - **Branch `a`** added an `@Override` method `onDestroy()` that calls `super.onDestroy()` and detaches a `userStatusPresenter`.
+   - **Branch `b`** added a set of methods related to handling comment selection and action mode (e.g., `onCommentSelected`, `onCreateActionMode`, etc.), which are part of a UI interaction system for handling selected comments in a chat interface.
+
+2. **Evaluate each change:**
+   - **Branch `a`'s change** is a lifecycle method (`onDestroy`) that ensures a presenter is detached when the activity is destroyed. This is a standard Android practice to prevent memory leaks and ensure proper resource cleanup.
+   - **Branch `b`'s change** introduces a full action mode system for handling selected comments, including copying and sharing functionality. This is a UI enhancement that adds user interaction features.
+
+3. **Understand the intention behind each change:**
+   - **Branch `a`** is likely focused on improving the app's stability and memory management by ensuring that the presenter is properly detached.
+   - **Branch `b`** is focused on enhancing the user experience by adding multi-comment selection and action capabilities.
+
+4. **Final decision:**
+   - Both changes are logically independent and do not interfere with each other. The `onDestroy()` method from branch `a` is a standard lifecycle method and should be included in the final code.
+   - The action mode-related methods from branch `b` are also essential for the UI functionality and should be included.
+   - Therefore, the correct resolution is to **combine both sets of changes** into a single class, ensuring that both the lifecycle management and the action mode functionality are preserved.
+</cot>
+
+```java
+@Override
+protected void onDestroy() {
+    super.onDestroy();
+    userStatusPresenter.detachView();
+}
+
+@Override
+public void onCommentSelected(List<QiscusComment> selectedComments) {
+    boolean hasCheckedItems = selectedComments.size() > 0;
+    if (hasCheckedItems && actionMode == null) {
+        actionMode = startSupportActionMode(this);
+    } else if (!hasCheckedItems && actionMode != null) {
+        actionMode.finish();
+    }
+
+    if (actionMode != null) {
+        actionMode.setTitle(selectedComments.size() + " selected");
+    }
+}
+
+@Override
+public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+    mode.getMenuInflater().inflate(R.menu.comment_action, menu);
+    return true;
+}
+
+@Override
+public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+    if (
+
+### Gold (Ground Truth)
+@Override
+    protected void onDestroy() {
+        super.onDestroy();
+        userStatusPresenter.detachView();
+    }
+
+    public void onCommentSelected(List<QiscusComment> selectedComments) {
+        boolean hasCheckedItems = selectedComments.size() > 0;
+        if (hasCheckedItems && actionMode == null) {
+            actionMode = startSupportActionMode(this);
+        } else if (!hasCheckedItems && actionMode != null) {
+            actionMode.finish();
+        }
+
+        if (actionMode != null) {
+            actionMode.setTitle(selectedComments.size() + " selected");
+        }
+    }
+
+    @Override
+    public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+        mode.getMenuInflater().inflate(R.menu.comment_action, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+        if (Build.VERSION.SDK_INT < 11) {
+            MenuItemCompat.setShowAsAction(menu.findItem(R.id.action_copy), MenuItemCompat.SHOW_AS_ACTION_NEVER);
+            MenuItemCompat.setShowAsAction(menu.findItem(R.id.action_share), MenuItemCompat.SHOW_AS_ACTION_NEVER);
+        } else {
+            menu.findItem(R.id.action_copy).setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
+            menu.findItem(R.id.action_share).setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
+        }
+
+        return true;
+    }
+
+    @Override
+    public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+        QiscusChatFragment fragment = (QiscusChatFragment) getSupportFragmentManager()
+                .findFragmentByTag(QiscusChatFragment.class.getName());
+        if (fragment == null) {
+            mode.finish();
+            return false;
+        }
+
+        List<QiscusComment> selectedComments = fragment.getSelectedComments();
+        int i = item.getItemId();
+        String text = "";
+        for (QiscusComment qiscusComment : selectedComments) {
+            text += qiscusComment.getSender() + ": ";
+            text += qiscusComment.isAttachment() ? qiscusComment.getAttachmentName() : qiscusComment.getMessage();
+            text += "\n";
+        }
+
+        if (i == R.id.action_copy) {
+            ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+            ClipData clip = ClipData.newPlainText(getString(R.string.chat_activity_label_clipboard), text);
+            clipboard.setPrimaryClip(clip);
+            Toast.makeText(this, selectedComments.size() + " messages copied!", Toast.LENGTH_SHORT).show();
+            mode.finish();
+        } else if (i == R.id.action_share) {
+            Intent intent = new Intent(Intent.ACTION_SEND);
+            intent.setType("text/plain");
+            intent.putExtra(Intent.EXTRA_SUBJECT, "Messages");
+            intent.putExtra(Intent.EXTRA_TEXT, text);
+            startActivity(Intent.createChooser(intent, "Share"));
+            mode.finish();
+        }
+        return false;
+    }
+
+    @Override
+    public void onDestroyActionMode(ActionMode mode) {
+        actionMode = null;
+        QiscusChatFragment fragment = (QiscusChatFragment) getSupportFragmentManager()
+                .findFragmentByTag(QiscusChatFragment.class.getName());
+        if (fragment != null) {
+            fragment.clearSelectedComments();
+        }
+    }
+
+### Diff Type
+A+B
+
+### Note: No code block found in the prediction.

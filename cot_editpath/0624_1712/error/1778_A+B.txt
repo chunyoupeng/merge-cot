@@ -1,0 +1,123 @@
+### Prompt
+<|im_start|>system
+You are a Great Git merge conflict resolver. Merge conflicts occur because both branch a and branch b have modified the same part of the base code in different ways. Your task is to analyze the changes made by a and b relative to base, understand their intentions, and produce a well-reasoned CoT (Chain of Thought) then then answer.<|im_end|>
+<|im_start|>user
+# Conflict
+>>>>>>> a
+public void sendToClient(String context, String clientId, PlatformOutboundInstruction instruction) {
+        connectionMap.entrySet().stream()
+                     .filter(e -> e.getKey().clientId.equals(clientId))
+                     .filter(e -> e.getKey().context.equals(context))
+                     .map(Map.Entry::getValue)
+                     .forEach(stream -> stream.onNext(instruction));
+||||||| base
+public void sendToClientId(String clientId, PlatformOutboundInstruction instruction) {
+        connectionMap.entrySet().stream()
+                     .filter(e -> e.getKey().clientId.equals(clientId))
+                     .map(Map.Entry::getValue)
+                     .forEach(stream -> stream.onNext(instruction));
+=======
+public void sendToClientId(String clientId, PlatformOutboundInstruction instruction) {
+        List<SendingStreamObserver<PlatformOutboundInstruction>> stream =
+                connectionMap.entrySet().stream()
+                             .filter(e -> e.getKey().clientId
+                                     .equals(clientId))
+                             .map(Map.Entry::getValue)
+                             .collect(Collectors.toList());
+        stream.forEach(s -> s.onNext(instruction));
+<<<<<<< b
+
+Moreover, we also provide you with the edit sequences, which refer to the token-level modifications from base to a and b, respectively.
+# Edit Sequence
+
+## From base to a
+<REPLACE> sendToClientId <WITH> sendToClient)
+<ADD> String context , filter ( e - > e . getKey ( ) . context . equals ( context ) ) <newline> .
+
+
+## From base to b
+<ADD> <newline> List < SendingStreamObserver < PlatformOutboundInstruction > > stream = <newline> collect ( Collectors . toList ( ) ) ; <newline> stream .
+<REPLACE> stream <WITH> s)
+<REPLACE> stream <WITH> s)
+
+
+# CoT guide
+1. Analyze the conflict point(s): what did `a` change compared to `base`? what did `b` change compared to `base`?
+2. Evaluate each change: why should a particular change be kept, discarded, or modified?
+3. Understand the intention behind each change in `a` and `b`.
+4. Final decision: based on code style, business logic, and correctness, determine the appropriate resolution. 
+
+# Output Format:
+You should output two thing: 
+1. the CoT, which should be placed within the <cot></cot> tag.
+2. Final resolution, the answer should be within the ```java and ```\/no_think<|im_end|>
+<|im_start|>asistant
+
+### Model Prediction
+<think>
+
+</think>
+
+# <cot>
+
+1. **Analyze the conflict point(s):**
+   - **Branch `a`**:
+     - Renamed the method from `sendToClientId` to `sendToClient`.
+     - Added a new parameter `String context`.
+     - Added a new filter condition to the stream: `.filter(e -> e.getKey().context.equals(context))`.
+   - **Branch `b`**:
+     - Changed the method to collect the stream into a `List<SendingStreamObserver<PlatformOutboundInstruction>>` before iterating over it.
+     - This change is likely for debugging or to allow for more complex operations on the list of streams.
+     - No parameter or method name change was made.
+
+2. **Evaluate each change:**
+   - **Branch `a`**:
+     - The method name change (`sendToClientId` → `sendToClient`) and the addition of the `context` parameter suggest a desire to filter connections not only by `clientId` but also by `context`.
+     - This is a logical and useful enhancement if the system supports multiple contexts per client.
+     - The new filter condition is a direct implementation of this logic.
+   - **Branch `b`**:
+     - The collection of the stream into a list is a minor change in behavior. It doesn't change the outcome of the method but may be useful for debugging or future expansion.
+     - This change is not conflicting with the logic of `a` but adds a different kind of behavior.
+
+3. **Understand the intention behind each change:**
+   - **Branch `a`**:
+     - The intention is to add filtering by `context` in addition to `clientId`, which implies a more granular control over which connections receive the instruction.
+   - **Branch `b`**:
+     - The intention is to collect the stream into a list, possibly for easier debugging or to allow for more complex operations on the list of streams.
+
+4. **Final decision:**
+   - The method name change and the addition of the `context` parameter from `a` are significant and should be retained.
+   - The filtering by `context` is a logical and necessary addition.
+   - The collection of the stream into a list from `b` is a minor but useful addition that can be retained as well.
+   - The final method should include both the `context` filtering and the collection into a list.
+
+# </cot>
+
+# Final Resolution
+
+```java
+public void sendToClient(String context, String clientId, PlatformOutboundInstruction instruction) {
+    List<SendingStreamObserver<PlatformOutboundInstruction>> stream =
+            connectionMap.entrySet().stream()
+                         .filter(e -> e.getKey().clientId.equals(clientId))
+                         .filter(e -> e.getKey().context.equals(context))
+                         .map(Map.Entry::getValue)
+                         .collect(Collectors.toList());
+    stream.forEach(s -> s.onNext(instruction));
+}
+```
+
+### Gold (Ground Truth)
+public void sendToClient(String context, String clientId, PlatformOutboundInstruction instruction) {
+        List<SendingStreamObserver<PlatformOutboundInstruction>> stream =
+                connectionMap.entrySet().stream()
+                             .filter(e -> e.getKey().clientId
+                                     .equals(clientId))
+                     .filter(e -> e.getKey().context.equals(context))
+                             .map(Map.Entry::getValue)
+                             .collect(Collectors.toList());
+        stream.forEach(s -> s.onNext(instruction));
+
+### Diff Type
+A+B
+

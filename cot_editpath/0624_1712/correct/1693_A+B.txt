@@ -1,0 +1,103 @@
+### Prompt
+<|im_start|>system
+You are a Great Git merge conflict resolver. Merge conflicts occur because both branch a and branch b have modified the same part of the base code in different ways. Your task is to analyze the changes made by a and b relative to base, understand their intentions, and produce a well-reasoned CoT (Chain of Thought) then then answer.<|im_end|>
+<|im_start|>user
+# Conflict
+>>>>>>> a
+public static CustomFont loadFont(URI fontFileURI, String subFontName,
+            boolean embedded, EncodingMode encodingMode, boolean useKerning,
+            boolean useAdvanced, InternalResourceResolver resourceResolver) throws IOException {
+||||||| base
+public static CustomFont loadFont(String fontFileURI, String subFontName,
+            boolean embedded, EncodingMode encodingMode, boolean useKerning,
+            boolean useAdvanced, FontResolver resolver) throws IOException {
+        fontFileURI = fontFileURI.trim();
+=======
+public static CustomFont loadFont(String fontFileURI, String subFontName,
+            boolean embedded, EmbeddingMode embeddingMode, EncodingMode encodingMode,
+            boolean useKerning, boolean useAdvanced, FontResolver resolver) throws IOException {
+        fontFileURI = fontFileURI.trim();
+<<<<<<< b
+
+Moreover, we also provide you with the edit sequences, which refer to the token-level modifications from base to a and b, respectively.
+# Edit Sequence
+
+## From base to a
+<REPLACE> String <WITH> URI)
+<REPLACE> FontResolver <WITH> InternalResourceResolver)
+<REPLACE> resolver <WITH> resourceResolver)
+<DELETE> <newline> fontFileURI = fontFileURI . trim ( ) ;
+
+
+## From base to b
+<ADD> EmbeddingMode embeddingMode , <newline>
+<DELETE> <newline>
+
+
+# CoT guide
+1. Analyze the conflict point(s): what did `a` change compared to `base`? what did `b` change compared to `base`?
+2. Evaluate each change: why should a particular change be kept, discarded, or modified?
+3. Understand the intention behind each change in `a` and `b`.
+4. Final decision: based on code style, business logic, and correctness, determine the appropriate resolution. 
+
+# Output Format:
+You should output two thing: 
+1. the CoT, which should be placed within the <cot></cot> tag.
+2. Final resolution, the answer should be within the ```java and ```\/no_think<|im_end|>
+<|im_start|>asistant
+
+### Model Prediction
+<think>
+
+</think>
+
+# <cot>
+
+1. **Analyze the conflict point(s):**
+   - **Branch a**:
+     - Changed the parameter type of `fontFileURI` from `String` to `URI`.
+     - Replaced `FontResolver` with `InternalResourceResolver`.
+     - Removed the line `fontFileURI = fontFileURI.trim();`.
+   - **Branch b**:
+     - Added a new parameter `EmbeddingMode embeddingMode`.
+     - No other changes to the method signature.
+
+2. **Evaluate each change:**
+   - **Branch a**:
+     - Changing `String` to `URI` is a significant change that implies stricter type safety and potentially more robust handling of font file URIs.
+     - Replacing `FontResolver` with `InternalResourceResolver` suggests a more specific resolver is needed for internal resources.
+     - Removing the `trim()` call might be intentional if the `URI` type already handles whitespace or if it's unnecessary for the new logic.
+   - **Branch b**:
+     - Adding `EmbeddingMode` is a logical extension to the method, allowing more control over how the font is embedded.
+     - No other changes to the method body suggest the `trim()` is still needed for the `String` version.
+
+3. **Understand the intention behind each change:**
+   - **Branch a** seems to be modernizing the method to use more specific types (`URI`, `InternalResourceResolver`) and removing unnecessary operations (`trim()`).
+   - **Branch b** is extending the method's functionality by adding a new parameter for embedding mode, which is a natural evolution of the API.
+
+4. **Final decision:**
+   - The `URI` type is more robust and should be kept.
+   - `InternalResourceResolver` is a more specific resolver and should be kept.
+   - The `trim()` operation is unnecessary if the `URI` type is used and should be removed.
+   - The new `EmbeddingMode` parameter is a logical addition and should be included.
+   - The `FontResolver` parameter is replaced by `InternalResourceResolver`, so it should not be kept.
+   - The `EncodingMode` parameter is kept as it is relevant to the font encoding.
+
+# </cot>
+
+# Final Resolution
+
+```java
+public static CustomFont loadFont(URI fontFileURI, String subFontName,
+        boolean embedded, EmbeddingMode embeddingMode, EncodingMode encodingMode,
+        boolean useKerning, boolean useAdvanced, InternalResourceResolver resourceResolver) throws IOException {
+```
+
+### Gold (Ground Truth)
+public static CustomFont loadFont(URI fontFileURI, String subFontName,
+            boolean embedded, EmbeddingMode embeddingMode, EncodingMode encodingMode,
+            boolean useKerning, boolean useAdvanced, InternalResourceResolver resourceResolver) throws IOException {
+
+### Diff Type
+A+B
+

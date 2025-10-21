@@ -1,0 +1,91 @@
+### Prompt
+<|im_start|>system
+You are a Great Git merge conflict resolver. Merge conflicts occur because both branch a and branch b have modified the same part of the base code in different ways. Your task is to analyze the changes made by a and b relative to base, understand their intentions, and produce a well-reasoned CoT (Chain of Thought) then then answer.<|im_end|>
+<|im_start|>user
+# Conflict
+>>>>>>> a
+@NonNull final Collection<BPartnerCompositeLookupKey> keys,
+			@NonNull final Function<Set<BPartnerCompositeLookupKey>, Map<BPartnerCompositeLookupKey, BPartnerComposite>> valuesLoader)
+||||||| base
+@NonNull final Collection<BPartnerCompositeLookupKey> keys,
+			@NonNull final Function<Collection<BPartnerCompositeLookupKey>, Map<BPartnerCompositeLookupKey, BPartnerComposite>> valuesLoader)
+=======
+@NonNull final Collection<OrgAndBPartnerCompositeLookupKey> keys,
+			@NonNull final Function<
+					Collection<OrgAndBPartnerCompositeLookupKey>,
+					Map<OrgAndBPartnerCompositeLookupKey, BPartnerComposite>> valuesLoader)
+<<<<<<< b
+
+Moreover, we also provide you with the edit sequences, which refer to the token-level modifications from base to a and b, respectively.
+# Edit Sequence
+
+## From base to a
+<REPLACE> Collection <WITH> Set)
+
+
+## From base to b
+<REPLACE> BPartnerCompositeLookupKey <WITH> OrgAndBPartnerCompositeLookupKey)
+<ADD> <newline>
+<REPLACE> BPartnerCompositeLookupKey <WITH> OrgAndBPartnerCompositeLookupKey)
+<ADD> <newline>
+<REPLACE> BPartnerCompositeLookupKey <WITH> OrgAndBPartnerCompositeLookupKey)
+
+
+# CoT guide
+1. Analyze the conflict point(s): what did `a` change compared to `base`? what did `b` change compared to `base`?
+2. Evaluate each change: why should a particular change be kept, discarded, or modified?
+3. Understand the intention behind each change in `a` and `b`.
+4. Final decision: based on code style, business logic, and correctness, determine the appropriate resolution. 
+
+# Output Format:
+You should output two thing: 
+1. the CoT, which should be placed within the <cot></cot> tag.
+2. Final resolution, the answer should be within the ```java and ```\/no_think<|im_end|>
+<|im_start|>asistant
+
+### Model Prediction
+<think>
+
+</think>
+
+# <cot>
+
+1. **Analyze the conflict point(s):**
+   - **Branch `a`** changed the type of the `keys` collection from `Collection` to `Set` in the method signature. It also updated the corresponding `Function` parameter to use `Set` instead of `Collection`.
+   - **Branch `b`** changed the type of the `keys` from `BPartnerCompositeLookupKey` to `OrgAndBPartnerCompositeLookupKey` in multiple places: the parameter type, the function input type, and the map key type.
+
+2. **Evaluate each change:**
+   - **Change in `a`:** Changing from `Collection` to `Set` implies a stricter requirement that the keys must be unique. This is a semantic change that affects how the method is used and what it expects from the caller. It might be intended to avoid duplicate keys in the input.
+   - **Change in `b`:** Replacing `BPartnerCompositeLookupKey` with `OrgAndBPartnerCompositeLookupKey` suggests a domain-level change, likely to include organizational context in the key. This is a more structural change, possibly to support a new business requirement or data model.
+
+3. **Understand the intention behind each change:**
+   - **Branch `a`** likely wants to enforce uniqueness of keys in the input collection, which is a logical constraint for a lookup operation.
+   - **Branch `b`** likely wants to extend the key type to include organizational information, which is a domain-specific enhancement.
+
+4. **Final decision:**
+   - Both changes are meaningful and serve different purposes. The key type change in `b` is more structural and likely more critical for the business logic. The `Set` change in `a` is a refinement of the input constraint.
+   - To resolve the conflict, we should **combine both changes**:
+     - Use `Set<OrgAndBPartnerCompositeLookupKey>` as the input type.
+     - Update the `Function` to use `Set<OrgAndBPartnerCompositeLookupKey>` as the input and `Map<OrgAndBPartnerCompositeLookupKey, BPartnerComposite>` as the output.
+   - This preserves the domain-specific enhancement from `b` and the uniqueness constraint from `a`.
+
+</cot>
+
+# Final Resolution
+
+```java
+@NonNull final Set<OrgAndBPartnerCompositeLookupKey> keys,
+		@NonNull final Function<
+				Set<OrgAndBPartnerCompositeLookupKey>,
+				Map<OrgAndBPartnerCompositeLookupKey, BPartnerComposite>> valuesLoader)
+```
+
+### Gold (Ground Truth)
+@NonNull final Collection<OrgAndBPartnerCompositeLookupKey> keys,
+			@NonNull final Function<
+								Set<OrgAndBPartnerCompositeLookupKey>,
+								Map<OrgAndBPartnerCompositeLookupKey, BPartnerComposite>> valuesLoader)
+
+### Diff Type
+A+B
+

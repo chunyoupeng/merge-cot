@@ -1,0 +1,80 @@
+### Prompt
+<|im_start|>system
+You are a Great Git merge conflict resolver. Merge conflicts occur because both branch a and branch b have modified the same part of the base code in different ways. Your task is to analyze the changes made by a and b relative to base, understand their intentions, and produce a well-reasoned CoT (Chain of Thought) then then answer.<|im_end|>
+<|im_start|>user
+# Conflict
+>>>>>>> a
+ArrayList<TrackNode<Spot>> x = wrap.get(i);
+				ArrayList<TrackNode<Spot>> y = wrap.get(i+1);
+				LinkingCostMatrixCreator<Spot> l = new LinkingCostMatrixCreator<Spot>(x, y);
+||||||| base
+ArrayList<Spot> x = wrap.get(i);
+				ArrayList<Spot> y = wrap.get(i+1);
+				LinkingCostMatrixCreator l = new LinkingCostMatrixCreator(x, y);
+=======
+ArrayList<Spot> x = wrap.get(i);
+				ArrayList<Spot> y = wrap.get(i+1);
+				LinkingCostMatrixCreator l = new LinkingCostMatrixCreator(x, y, settings);
+<<<<<<< b
+
+Moreover, we also provide you with the edit sequences, which refer to the token-level modifications from base to a and b, respectively.
+# Edit Sequence
+
+## From base to a
+<ADD> TrackNode < > TrackNode < > < Spot > < Spot >
+
+
+## From base to b
+<ADD> , settings
+
+
+# CoT guide
+1. Analyze the conflict point(s): what did `a` change compared to `base`? what did `b` change compared to `base`?
+2. Evaluate each change: why should a particular change be kept, discarded, or modified?
+3. Understand the intention behind each change in `a` and `b`.
+4. Final decision: based on code style, business logic, and correctness, determine the appropriate resolution. 
+
+# Output Format:
+You should output two thing: 
+1. the CoT, which should be placed within the <cot></cot> tag.
+2. Final resolution, the answer should be within the ```java and ```\/no_think<|im_end|>
+<|im_start|>asistant
+
+### Model Prediction
+<think>
+
+</think>
+
+<cot>
+1. **Analyze the conflict point(s):**
+   - **Branch `a`** changed the type of `x` and `y` from `ArrayList<Spot>` to `ArrayList<TrackNode<Spot>>`. It also updated the constructor call to `LinkingCostMatrixCreator<Spot>(x, y)`, adding a generic type parameter `<Spot>`.
+   - **Branch `b`** added a third argument `settings` to the constructor call, keeping the types as `ArrayList<Spot>` and `LinkingCostMatrixCreator` without generic type parameters.
+
+2. **Evaluate each change:**
+   - **Branch `a`'s change** suggests that the logic now works with `TrackNode<Spot>` objects instead of raw `Spot` objects. This is likely a structural change to support more complex tracking logic, such as tracking nodes in a graph or sequence.
+   - **Branch `b`'s change** introduces a configuration parameter `settings` to the constructor, which implies that the matrix creation now depends on some external configuration. This is a functional enhancement rather than a structural one.
+
+3. **Understand the intention behind each change:**
+   - **Branch `a`** is likely modernizing or refactoring the code to use a more abstract or encapsulated representation (`TrackNode<Spot>`) of the data.
+   - **Branch `b`** is likely extending the functionality of the matrix creator to allow for customizable behavior via `settings`.
+
+4. **Final decision:**
+   - Both changes are meaningful and serve different purposes. The generic type change in `a` is structural and should be preserved if the codebase is moving toward using `TrackNode<Spot>`.
+   - The addition of `settings` in `b` is a functional enhancement and should also be preserved.
+   - Therefore, the resolution should combine both changes: use `ArrayList<TrackNode<Spot>>` for `x` and `y`, and pass `settings` to the constructor.
+</cot>
+
+```java
+ArrayList<TrackNode<Spot>> x = wrap.get(i);
+ArrayList<TrackNode<Spot>> y = wrap.get(i+1);
+LinkingCostMatrixCreator<Spot> l = new LinkingCostMatrixCreator<Spot>(x, y, settings);
+```
+
+### Gold (Ground Truth)
+ArrayList<TrackNode<Spot>> x = wrap.get(i);
+				ArrayList<TrackNode<Spot>> y = wrap.get(i+1);
+				LinkingCostMatrixCreator<Spot> l = new LinkingCostMatrixCreator<Spot>(x, y, settings);
+
+### Diff Type
+A+B
+

@@ -1,0 +1,86 @@
+### Prompt
+<|im_start|>system
+You are a Great Git merge conflict resolver. Merge conflicts occur because both branch a and branch b have modified the same part of the base code in different ways. Your task is to analyze the changes made by a and b relative to base, understand their intentions, and produce a well-reasoned CoT (Chain of Thought) then then answer.<|im_end|>
+<|im_start|>user
+# Conflict
+>>>>>>> a
+Team,Giver's Full Name,Giver's Last Name,Recipient's Team,Recipient's Full Name,Recipient's Last Name,Feedback
+        "Instructors","Instructor1 Course1","Instructor1 Course1","Instructors","Instructor1 Course1","Instructor1 Course1","It's good"
+        "Instructors","Instructor2 Course1","Instructor2 Course1","Instructors","Instructor2 Course1","Instructor2 Course1","It's perfect"
+        "Instructors","Instructor3 Course1","Instructor3 Course1","Instructors","Instructor3 Course1","Instructor3 Course1","No Response"
+||||||| base
+Team,Giver's Full Name,Giver's Last Name,Recipient's Team,Recipient's Full Name,Recipient's Last Name,Feedback
+        "Instructors","Instructor1 Course1","Instructor1 Course1","Instructors","Instructor1 Course1","Instructor1 Course1","It's good"
+        "Instructors","Instructor2 Course1","Instructor2 Course1","Instructors","Instructor2 Course1","Instructor2 Course1","It's perfect"
+=======
+Team,Giver's Full Name,Giver's Last Name,Giver's Email,Recipient's Team,Recipient's Full Name,Recipient's Last Name,Recipient's Email,Feedback
+        "Instructors","Instructor1 Course1","Instructor1 Course1","instructor1@course1.tmt","Instructors","Instructor1 Course1","Instructor1 Course1","instructor1@course1.tmt","It's good"
+        "Instructors","Instructor2 Course1","Instructor2 Course1","instructor2@course1.tmt","Instructors","Instructor2 Course1","Instructor2 Course1","instructor2@course1.tmt","It's perfect"
+<<<<<<< b
+
+Moreover, we also provide you with the edit sequences, which refer to the token-level modifications from base to a and b, respectively.
+# Edit Sequence
+
+## From base to a
+<ADD> <newline> " Instructors " , " Instructor3 Course1 " , " Instructor3 Course1 " , " Instructors " , " Instructor3 Course1 " , " Instructor3 Course1 " , " No Response "
+
+
+## From base to b
+<ADD> , Giver ' s Email Recipient ' s Email , instructor1 @ course1 . tmt " , " " , " instructor1 @ course1 . tmt instructor2 @ course1 . tmt " , " instructor2 @ course1 . tmt " , "
+
+
+# CoT guide
+1. Analyze the conflict point(s): what did `a` change compared to `base`? what did `b` change compared to `base`?
+2. Evaluate each change: why should a particular change be kept, discarded, or modified?
+3. Understand the intention behind each change in `a` and `b`.
+4. Final decision: based on code style, business logic, and correctness, determine the appropriate resolution. 
+
+# Output Format:
+You should output two thing: 
+1. the CoT, which should be placed within the <cot></cot> tag.
+2. Final resolution, the answer should be within the ```java and ```\/no_think<|im_end|>
+<|im_start|>asistant
+
+### Model Prediction
+<think>
+
+</think>
+
+<cot>
+1. **Analyze the conflict point(s):**
+   - **Branch `a`** added a new row for "Instructor3 Course1" with the feedback "No Response".
+   - **Branch `b`** added two new email fields: "Giver's Email" and "Recipient's Email" to the header and populated them with email addresses for the existing instructors.
+
+2. **Evaluate each change:**
+   - **Branch `a`'s change** introduces a new feedback entry for a third instructor. This is a straightforward addition and does not interfere with the structure of the CSV.
+   - **Branch `b`'s change** adds new columns to the CSV header and populates them with email addresses. This is a structural change that affects the format of the data.
+
+3. **Understand the intention behind each change:**
+   - **Branch `a`** likely aims to include additional feedback from a third instructor, which is a natural extension of the existing data.
+   - **Branch `b`** likely aims to enrich the data by including contact information (emails) for both givers and recipients, which could be useful for follow-up or communication purposes.
+
+4. **Final decision:**
+   - The changes from both branches are complementary and do not conflict directly. The addition of the third instructor in `a` can coexist with the addition of email fields in `b`.
+   - To resolve the conflict, we should merge both changes:
+     - Add the new email columns to the header.
+     - Populate the email fields for the existing instructors.
+     - Add the new instructor row with the appropriate email fields left empty or filled with "No Response" as appropriate.
+   - This ensures that the data remains consistent and that both sets of information are preserved.
+</cot>
+
+```
+Team,Giver's Full Name,Giver's Last Name,Giver's Email,Recipient's Team,Recipient's Full Name,Recipient's Last Name,Recipient's Email,Feedback
+        "Instructors","Instructor1 Course1","Instructor1 Course1","instructor1@course1.tmt","Instructors","Instructor1 Course1","Instructor1 Course1","instructor1@course1.tmt","It's good"
+        "Instructors","Instructor2 Course1","Instructor2 Course1","instructor2@course1.tmt","Instructors","Instructor2 Course1","Instructor2 Course1","instructor2@course1.tmt","It's perfect"
+        "Instructors","Instructor3 Course1","Instructor3 Course1","","Instructors","Instructor3 Course1","Instructor3 Course1","","No Response"
+```
+
+### Gold (Ground Truth)
+Team,Giver's Full Name,Giver's Last Name,Giver's Email,Recipient's Team,Recipient's Full Name,Recipient's Last Name,Recipient's Email,Feedback
+        "Instructors","Instructor1 Course1","Instructor1 Course1","instructor1@course1.tmt","Instructors","Instructor1 Course1","Instructor1 Course1","instructor1@course1.tmt","It's good"
+        "Instructors","Instructor2 Course1","Instructor2 Course1","instructor2@course1.tmt","Instructors","Instructor2 Course1","Instructor2 Course1","instructor2@course1.tmt","It's perfect"
+        "Instructors","Instructor3 Course1","Instructor3 Course1","instructor3@course1.tmt""Instructors","Instructor3 Course1","Instructor3 Course1","instructor3@course1.tmt""No Response"
+
+### Diff Type
+A+B+M
+

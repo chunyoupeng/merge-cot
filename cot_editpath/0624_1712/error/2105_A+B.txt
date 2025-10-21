@@ -1,0 +1,147 @@
+### Prompt
+<|im_start|>system
+You are a Great Git merge conflict resolver. Merge conflicts occur because both branch a and branch b have modified the same part of the base code in different ways. Your task is to analyze the changes made by a and b relative to base, understand their intentions, and produce a well-reasoned CoT (Chain of Thought) then then answer.<|im_end|>
+<|im_start|>user
+# Conflict
+>>>>>>> a
+List<Map<String, Map<String, Object>>> onFailureData;
+                Iterator<Map<String, Map<String, Object>>> tasksIterator = workFlowRawData.iterator();
+                while(tasksIterator.hasNext()){
+                    Map<String, Map<String, Object>> taskData = tasksIterator.next();
+                    String taskName = taskData.keySet().iterator().next();
+                    if(taskName.equals(SlangTextualKeys.ON_FAILURE_KEY)){
+                        try{
+                            onFailureData = (List<Map<String, Map<String, Object>>>)taskData.values().iterator().next();
+                        } catch (ClassCastException ex){
+                            throw new RuntimeException("Flow: '" + execName + "' syntax is illegal.\nBelow 'on_failure' property there should be a list of tasks and not a map");
+                        }
+                        if (CollectionUtils.isNotEmpty(onFailureData)) {
+                            onFailureWorkFlow = compileWorkFlow(onFailureData, imports, null, true);
+                        }
+                        tasksIterator.remove();
+                        break;
+                    }
+||||||| base
+LinkedHashMap<String, Map<String, Object>> onFailureData;
+                try{
+                    onFailureData = (LinkedHashMap) workFlowRawData.remove(SlangTextualKeys.ON_FAILURE_KEY);
+                } catch (ClassCastException ex){
+                    throw new RuntimeException("Flow: '" + execName + "' syntax is illegal.\nBelow 'on_failure' property there should be a map of tasks and not a list");
+                }
+                if (MapUtils.isNotEmpty(onFailureData)) {
+                    onFailureWorkFlow = compileWorkFlow(onFailureData, imports, null, true);
+=======
+LinkedHashMap<String, Map<String, Object>> onFailureData;
+                try{
+                    onFailureData = (LinkedHashMap) workFlowRawData.remove(ON_FAILURE_KEY);
+                } catch (ClassCastException ex){
+                    throw new RuntimeException("Flow: '" + execName + "' syntax is illegal.\nBelow 'on_failure' property there should be a map of tasks and not a list");
+                }
+                if (MapUtils.isNotEmpty(onFailureData)) {
+                    onFailureWorkFlow = compileWorkFlow(onFailureData, imports, null, true);
+<<<<<<< b
+
+Moreover, we also provide you with the edit sequences, which refer to the token-level modifications from base to a and b, respectively.
+# Edit Sequence
+
+## From base to a
+<REPLACE> LinkedHashMap <WITH> List)
+<REPLACE> String <WITH> Map)
+<REPLACE> , <WITH> <)
+<REPLACE> Map <WITH> String)
+<REPLACE> < <WITH> ,)
+<REPLACE> String <WITH> Map)
+<REPLACE> , <WITH> <)
+<REPLACE> Object <WITH> String)
+<REPLACE> > <WITH> ,)
+<REPLACE> > <WITH> Object)
+<REPLACE> onFailureData <WITH> >)
+<REPLACE> ; <WITH> >)
+<ADD> > onFailureData ; <newline> Iterator < Map < String , Map < String , Object > > > tasksIterator = workFlowRawData . iterator ( ) ; <newline> while ( tasksIterator . hasNext ( ) ) { <newline> Map < String , Map < String , Object > > taskData = tasksIterator . next ( ) ; <newline> String taskName = taskData . keySet ( ) . iterator ( ) . next ( ) ; <newline> if ( taskName . equals ( SlangTextualKeys . ON_FAILURE_KEY ) ) {
+<REPLACE> LinkedHashMap <WITH> List)
+<REPLACE> ) <WITH> <)
+<REPLACE> workFlowRawData <WITH> Map)
+<REPLACE> . <WITH> <)
+<REPLACE> remove <WITH> String)
+<REPLACE> ( <WITH> ,)
+<REPLACE> SlangTextualKeys <WITH> Map)
+<REPLACE> . <WITH> <)
+<REPLACE> ON_FAILURE_KEY <WITH> String)
+<ADD> , Object > > > ) taskData . values ( ) . iterator ( ) . next (
+<REPLACE> map <WITH> list)
+<REPLACE> list <WITH> map)
+<REPLACE> MapUtils <WITH> CollectionUtils)
+<ADD> <newline> } <newline> tasksIterator . remove ( ) ; <newline> break ; <newline> }
+
+
+## From base to b
+<DELETE> SlangTextualKeys .
+
+
+# CoT guide
+1. Analyze the conflict point(s): what did `a` change compared to `base`? what did `b` change compared to `base`?
+2. Evaluate each change: why should a particular change be kept, discarded, or modified?
+3. Understand the intention behind each change in `a` and `b`.
+4. Final decision: based on code style, business logic, and correctness, determine the appropriate resolution. 
+
+# Output Format:
+You should output two thing: 
+1. the CoT, which should be placed within the <cot></cot> tag.
+2. Final resolution, the answer should be within the ```java and ```\/no_think<|im_end|>
+<|im_start|>asistant
+
+### Model Prediction
+<think>
+
+</think>
+
+<cot>
+1. **Analyze the conflict point(s):**
+   - **Branch `a`**:
+     - Changed `onFailureData` from `LinkedHashMap<String, Map<String, Object>>` to `List<Map<String, Map<String, Object>>>`.
+     - Instead of directly removing the key from `workFlowRawData`, it iterates over the entries and checks for the key `SlangTextualKeys.ON_FAILURE_KEY`.
+     - If found, it extracts the value as a list and removes the entry from the iterator.
+     - Uses `CollectionUtils.isNotEmpty` instead of `MapUtils.isNotEmpty`.
+     - This suggests a shift from handling a map to handling a list of tasks under the `on_failure` key.
+   - **Branch `b`**:
+     - Removed the reference to `SlangTextualKeys` and directly used `ON_FAILURE_KEY`.
+     - No structural changes to the data types or logic flow.
+     - This is a minor refactoring to simplify the code by removing a class reference.
+
+2. **Evaluate each change:**
+   - **Branch `a`'s changes**:
+     - The change from `LinkedHashMap` to `List` is significant and implies a different structure for the `on_failure` data.
+     - The logic now iterates over the map entries to find the key and extract the value as a list.
+     - This is a more flexible approach if the `on_failure` key is not always at the top level or if multiple keys need to be processed.
+     - The use of `CollectionUtils` instead of `MapUtils` aligns with the new data structure.
+   - **Branch `b`'s changes**:
+     - The removal of `SlangTextualKeys` is a minor refactoring and likely a simplification if `ON_FAILURE_KEY` is a constant defined elsewhere.
+     - This change is safe and does not conflict with the logic in `a`.
+
+3. **Understand the intention behind each change:**
+   - **Branch `a`**:
+     - The intention is to support a list-based structure for `on_failure`
+
+### Gold (Ground Truth)
+List<Map<String, Map<String, Object>>> onFailureData;
+                Iterator<Map<String, Map<String, Object>>> tasksIterator = workFlowRawData.iterator();
+                while(tasksIterator.hasNext()){
+                    Map<String, Map<String, Object>> taskData = tasksIterator.next();
+                    String taskName = taskData.keySet().iterator().next();
+                    if(taskName.equals(ON_FAILURE_KEY)){
+                        try{
+                            onFailureData = (List<Map<String, Map<String, Object>>>)taskData.values().iterator().next();
+                        } catch (ClassCastException ex){
+                            throw new RuntimeException("Flow: '" + execName + "' syntax is illegal.\nBelow 'on_failure' property there should be a list of tasks and not a map");
+                        }
+                        if (CollectionUtils.isNotEmpty(onFailureData)) {
+                            onFailureWorkFlow = compileWorkFlow(onFailureData, imports, null, true);
+                        }
+                        tasksIterator.remove();
+                        break;
+                    }
+
+### Diff Type
+A+B
+
+### Note: No code block found in the prediction.

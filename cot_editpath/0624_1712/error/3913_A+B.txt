@@ -1,0 +1,96 @@
+### Prompt
+<|im_start|>system
+You are a Great Git merge conflict resolver. Merge conflicts occur because both branch a and branch b have modified the same part of the base code in different ways. Your task is to analyze the changes made by a and b relative to base, understand their intentions, and produce a well-reasoned CoT (Chain of Thought) then then answer.<|im_end|>
+<|im_start|>user
+# Conflict
+>>>>>>> a
+is(snippet(asciidoctor()).withContents(
+						httpResponse(asciidoctor(), HttpStatus.OK)
+								.header("a", "alpha")
+								.header("Content-Type", "application/json")
+								.header(HttpHeaders.CONTENT_LENGTH,
+										original.getBytes().length).content(original))));
+||||||| base
+is(snippet().withContents(
+						httpResponse(HttpStatus.OK)
+								.header("a", "alpha")
+								.header("Content-Type", "application/json")
+								.header(HttpHeaders.CONTENT_LENGTH,
+										original.getBytes().length).content(original))));
+=======
+is(snippet().withContents(httpResponse(HttpStatus.OK).header("a", "alpha")
+						.header("Content-Type", "application/json")
+						.header(HttpHeaders.CONTENT_LENGTH, original.getBytes().length)
+						.content(original))));
+<<<<<<< b
+
+Moreover, we also provide you with the edit sequences, which refer to the token-level modifications from base to a and b, respectively.
+# Edit Sequence
+
+## From base to a
+<ADD> asciidoctor ( ) asciidoctor ( ) ,
+
+
+## From base to b
+<DELETE> <newline> <newline> <newline>
+<ADD> <newline>
+
+
+# CoT guide
+1. Analyze the conflict point(s): what did `a` change compared to `base`? what did `b` change compared to `base`?
+2. Evaluate each change: why should a particular change be kept, discarded, or modified?
+3. Understand the intention behind each change in `a` and `b`.
+4. Final decision: based on code style, business logic, and correctness, determine the appropriate resolution. 
+
+# Output Format:
+You should output two thing: 
+1. the CoT, which should be placed within the <cot></cot> tag.
+2. Final resolution, the answer should be within the ```java and ```\/no_think<|im_end|>
+<|im_start|>asistant
+
+### Model Prediction
+<think>
+
+</think>
+
+<cot>
+1. **Analyze the conflict point(s):**
+   - **Branch `a`** added `asciidoctor()` to the `snippet()` call and also added `asciidoctor()` as an argument to `httpResponse(...)`. This suggests an intention to associate the HTTP response with the `asciidoctor` functionality.
+   - **Branch `b`** removed some newlines and added a newline, likely to reformat the code for readability or to fix formatting inconsistencies. It does not introduce any functional change.
+
+2. **Evaluate each change:**
+   - The change in **`a`** introduces a functional modification by adding `asciidoctor()` to both the `snippet()` and `httpResponse()` calls. This likely reflects an intention to enhance the test or example with specific context related to `asciidoctor`.
+   - The change in **`b`** is purely cosmetic (formatting), and does not affect the logic or behavior of the code.
+
+3. **Understand the intention behind each change:**
+   - **`a`** aims to enrich the test or example by explicitly associating it with `asciidoctor`, which could be important for clarity or correctness in the context of the test suite.
+   - **`b`** aims to improve code formatting, which is a valid concern but does not conflict with the functional change in `a`.
+
+4. **Final decision:**
+   - Since the change in `b` is purely cosmetic and does not interfere with the functional change in `a`, we can safely incorporate both changes.
+   - The formatting from `b` can be applied to the updated code from `a` to maintain consistent style.
+   - Therefore, the correct resolution is to keep the functional enhancement from `a` and apply the formatting from `b`.
+</cot>
+
+```java
+is(snippet(asciidoctor()).withContents(
+		httpResponse(asciidoctor(), HttpStatus.OK)
+				.header("a", "alpha")
+				.header("Content-Type", "application/json")
+				.header(HttpHeaders.CONTENT_LENGTH, original.getBytes().length)
+				.content(original)));
+```
+
+### Gold (Ground Truth)
+is(snippet(asciidoctor())
+						.withContents(
+								httpResponse(asciidoctor(), HttpStatus.OK)
+										.header("a", "alpha")
+										.header("Content-Type", "application/json")
+										.header(HttpHeaders.CONTENT_LENGTH,
+												original.getBytes().length)
+										.content(original))));
+
+### Diff Type
+A+B
+

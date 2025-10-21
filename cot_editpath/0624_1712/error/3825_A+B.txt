@@ -1,0 +1,79 @@
+### Prompt
+<|im_start|>system
+You are a Great Git merge conflict resolver. Merge conflicts occur because both branch a and branch b have modified the same part of the base code in different ways. Your task is to analyze the changes made by a and b relative to base, understand their intentions, and produce a well-reasoned CoT (Chain of Thought) then then answer.<|im_end|>
+<|im_start|>user
+# Conflict
+>>>>>>> a
+boolean pressureUnits = sharedPreferences.getBoolean("selectPressureUnit", true);  //true = bar, false = psi
+        boolean temperatureUnits = sharedPreferences.getBoolean("selectTemperatureUnit", true);  //true = celcius, false = fahrenheit
+||||||| base
+pressureUnits = sharedPreferences.getBoolean("selectPressureUnit", true);  //true = bar, false = psi
+        temperatureUnits = sharedPreferences.getBoolean("selectTemperatureUnit", true);  //true = celcius, false = fahrenheit
+=======
+pressureUnits = sharedPreferences.getBoolean("selectPressureUnit", true);  //true = bar, false = psi
+        temperatureUnits = sharedPreferences.getBoolean("selectTemperatureUnit", true);  //true = celcius, false = fahrenheit
+        powerUnits = sharedPreferences.getBoolean("selectPowerUnit", true);  //true = kw, false = ps
+<<<<<<< b
+
+Moreover, we also provide you with the edit sequences, which refer to the token-level modifications from base to a and b, respectively.
+# Edit Sequence
+
+## From base to a
+<ADD> boolean boolean
+
+
+## From base to b
+<ADD> <newline> powerUnits = sharedPreferences . getBoolean ( " selectPowerUnit " , true ) ; / / true = kw , false = ps
+
+
+# CoT guide
+1. Analyze the conflict point(s): what did `a` change compared to `base`? what did `b` change compared to `base`?
+2. Evaluate each change: why should a particular change be kept, discarded, or modified?
+3. Understand the intention behind each change in `a` and `b`.
+4. Final decision: based on code style, business logic, and correctness, determine the appropriate resolution. 
+
+# Output Format:
+You should output two thing: 
+1. the CoT, which should be placed within the <cot></cot> tag.
+2. Final resolution, the answer should be within the ```java and ```\/no_think<|im_end|>
+<|im_start|>asistant
+
+### Model Prediction
+<think>
+
+</think>
+
+<cot>
+1. **Analyze the conflict point(s):**
+   - **Branch `a`** added the keyword `boolean` before the variable declarations of `pressureUnits` and `temperatureUnits`. This suggests that the original base code may have had these variables declared outside the current scope or already declared elsewhere, and `a` is redeclaring them with `boolean` for clarity or correctness.
+   - **Branch `b`** added a new line for `powerUnits`, which is a new variable for power unit preference, likely to be used in the app for displaying power in kW or PS.
+
+2. **Evaluate each change:**
+   - **Branch `a`'s change** introduces `boolean` as a type declaration. If the variables `pressureUnits` and `temperatureUnits` were already declared in the base code, this could be redundant. However, if they were not declared in the base, this change is necessary for the code to compile.
+   - **Branch `b`'s change** introduces a new variable `powerUnits` for power unit preference. This is a logical and necessary addition if the app now supports power unit selection.
+
+3. **Understand the intention behind each change:**
+   - **Branch `a`** likely intended to ensure that the variables `pressureUnits` and `temperatureUnits` are properly declared with their types, possibly to fix a compilation error or to improve code clarity.
+   - **Branch `b`** likely intended to extend the app's functionality by adding support for power unit selection, which is a new feature.
+
+4. **Final decision:**
+   - If the base code did not already declare `pressureUnits` and `temperatureUnits`, then `a`'s change is necessary. If they were already declared, `a`'s change is redundant but harmless.
+   - `b`'s change is a new feature and should be retained.
+   - The best resolution is to combine both changes: declare the variables with their types (as in `a`) and add the new variable from `b`.
+
+</cot>
+
+```java
+boolean pressureUnits = sharedPreferences.getBoolean("selectPressureUnit", true);  //true = bar, false = psi
+        boolean temperatureUnits = sharedPreferences.getBoolean("selectTemperatureUnit", true);  //true = celcius, false = fahrenheit
+        boolean powerUnits = sharedPreferences.getBoolean("selectPowerUnit", true);  //true = kw, false = ps
+```
+
+### Gold (Ground Truth)
+boolean pressureUnits = sharedPreferences.getBoolean("selectPressureUnit", true);  //true = bar, false = psi
+        boolean temperatureUnits = sharedPreferences.getBoolean("selectTemperatureUnit", true);  //true = celcius, false = fahrenheit
+        powerUnits = sharedPreferences.getBoolean("selectPowerUnit", true);  //true = kw, false = ps
+
+### Diff Type
+A+B
+

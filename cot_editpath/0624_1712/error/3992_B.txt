@@ -1,0 +1,155 @@
+### Prompt
+<|im_start|>system
+You are a Great Git merge conflict resolver. Merge conflicts occur because both branch a and branch b have modified the same part of the base code in different ways. Your task is to analyze the changes made by a and b relative to base, understand their intentions, and produce a well-reasoned CoT (Chain of Thought) then then answer.<|im_end|>
+<|im_start|>user
+# Conflict
+>>>>>>> a
+private void onAddMessage(Text text, int messageId, int timestamp, boolean bl, CallbackInfo info) {
+        String message = text.getString();
+
+        // Ignore players
+        for (String name : Ignore.ignoredPlayers) {
+            if (message.contains("<" + name + ">")) {
+                info.cancel();
+                return;
+            }
+        }
+
+        // Anti Spam
+        AntiSpam antiSpam = ModuleManager.INSTANCE.get(AntiSpam.class);
+        for (int i = 0; i < antiSpam.getDepth(); i++) {
+            if (checkMsg(message, timestamp, messageId, i)) {
+                if (antiSpam.isMoveToBottom() && i != 0) {
+                    ChatHudLine msg = visibleMessages.remove(i);
+                    visibleMessages.add(0, msg);
+                    messages.add(0, msg);
+                }
+
+                info.cancel();
+                return;
+            }
+        }
+
+        //Friend Colour
+        if (ModuleManager.INSTANCE.get(FriendColor.class).isActive() && !message.equals(lastMessage)) {
+            String convert = message;
+            List<Friend> friends = FriendManager.INSTANCE.getAll();
+            for (Friend friend : friends) {
+                if (convert.contains(friend.name)) {
+                    convert = convert.replaceAll(friend.name, "§d" + friend.name + "§r");
+                }
+            }
+            lastMessage = convert;
+            Utils.sendMessage(convert);
+            lastMessage = null;
+||||||| base
+private void onAddMessage(Text message, int messageId, int timestamp, boolean bl, CallbackInfo info) {
+        // Ignore players
+        for (String name : Ignore.ignoredPlayers) {
+            if (message.toString().contains("<" + name + ">")) {
+                info.cancel();
+                return;
+            }
+        }
+
+        // Anti Spam
+        AntiSpam antiSpam = ModuleManager.INSTANCE.get(AntiSpam.class);
+        for (int i = 0; i < antiSpam.getDepth(); i++) {
+            if (checkMsg(message.asFormattedString(), timestamp, messageId, i)) {
+                if (antiSpam.isMoveToBottom() && i != 0) {
+                    ChatHudLine msg = visibleMessages.remove(i);
+                    visibleMessages.add(0, msg);
+                    messages.add(0, msg);
+                }
+
+                info.cancel();
+                return;
+            }
+        }
+
+        //Friend Colour
+        if (ModuleManager.INSTANCE.get(FriendColor.class).isActive() && !message.asString().equals(lastMessage)) {
+            String convert = message.asString();
+            List<Friend> friends = FriendManager.INSTANCE.getAll();
+            for (Friend friend : friends) {
+                if (convert.contains(friend.name)) {
+                    convert = convert.replaceAll(friend.name, "§d" + friend.name + "§r");
+                }
+            }
+            lastMessage = convert;
+            Utils.sendMessage(convert);
+            lastMessage = null;
+=======
+private void onAddMessage(Text message, int messageId, int timestamp, boolean bl, CallbackInfo info) {
+        // Better Chat
+        if (ModuleManager.INSTANCE.get(BetterChat.class).onMsg(message.getString(), messageId, timestamp, messages, visibleMessages)) {
+<<<<<<< b
+
+Moreover, we also provide you with the edit sequences, which refer to the token-level modifications from base to a and b, respectively.
+# Edit Sequence
+
+## From base to a
+<REPLACE> message <WITH> text)
+<ADD> String message = text . getString ( ) ; <newline> <newline>
+<DELETE> toString ( ) . . asFormattedString ( ) asString ( ) . . asString ( )
+
+
+## From base to b
+<REPLACE> Ignore <WITH> Better)
+<REPLACE> players <WITH> Chat)
+<DELETE> <newline> for ( String name : Ignore . ignoredPlayers ) { <newline> if ( message . toString ( ) . contains ( " < " + name + " > " ) ) { <newline> info . cancel ( ) ; <newline> return ; <newline> } <newline> } <newline> <newline> / / Anti Spam <newline> AntiSpam antiSpam = ModuleManager . INSTANCE . get ( AntiSpam . class ) ; <newline> for ( int i = 0 ; i < antiSpam . getDepth ( ) ; i + + ) { <newline> if ( checkMsg ( message . asFormattedString ( ) , timestamp , messageId , i ) ) { <newline> if ( antiSpam . isMoveToBottom ( ) & & i ! = 0 ) { <newline> ChatHudLine msg = visibleMessages . remove ( i ) ; <newline> visibleMessages . add ( 0 , msg ) ; <newline> messages . add ( 0 , msg ) ; <newline> } <newline> <newline> info . cancel ( ) ; <newline> return ; <newline> } <newline> } <newline> <newline> / / Friend Colour
+<REPLACE> FriendColor <WITH> BetterChat)
+<REPLACE> isActive <WITH> onMsg)
+<ADD> ( message . getString
+<REPLACE> & <WITH> ,)
+<REPLACE> & <WITH> messageId)
+<REPLACE> ! <WITH> ,)
+<REPLACE> message <WITH> timestamp)
+<REPLACE> . <WITH> ,)
+<REPLACE> asString <WITH> messages)
+<REPLACE> ( <WITH> ,)
+<REPLACE> ) <WITH> visibleMessages)
+<DELETE> . equals ( lastMessage <newline> String convert = message . asString ( ) ; <newline> List < Friend > friends = FriendManager . INSTANCE . getAll ( ) ; <newline> for ( Friend friend : friends ) { <newline> if ( convert . contains ( friend . name ) ) { <newline> convert = convert . replaceAll ( friend . name , " § d " + friend . name + " § r " ) ; <newline> } <newline> } <newline> lastMessage = convert ; <newline> Utils . sendMessage ( convert ) ; <newline> lastMessage = null ;
+
+
+# CoT guide
+1. Analyze the conflict point(s): what did `a` change compared to `base`? what did `b` change compared to `base`?
+2. Evaluate each change: why should a particular change be kept, discarded, or modified?
+3. Understand the intention behind each change in `a` and `b`.
+4. Final decision: based on code style, business logic, and correctness, determine the appropriate resolution. 
+
+# Output Format:
+You should output two thing: 
+1. the CoT, which should be placed within the <cot></cot> tag.
+2. Final resolution, the answer should be within the ```java and ```\/no_think<|im_end|>
+<|im_start|>asistant
+
+### Model Prediction
+<think>
+
+</think>
+
+<cot>
+1. **Analyze the conflict point(s):**
+   - **Branch `a` changes:**
+     - Renamed the parameter `message` to `text`.
+     - Introduced a new variable `String message = text.getString();` to extract the string from `text`.
+     - Replaced all instances of `message.toString()` and `message.asFormattedString()` with `message` (the new variable).
+     - Replaced `message.asString()` with `message` in the `FriendColor` logic.
+   - **Branch `b` changes:**
+     - Completely removed the "Ignore players" and "Anti Spam" logic.
+     - Replaced the "Friend Colour" logic with a call to `BetterChat.onMsg(...)`.
+     - Introduced a new method call `BetterChat.onMsg(...)` which seems to handle message processing.
+     - Removed all string manipulation and `Friend`-related logic.
+
+2. **Evaluate each
+
+### Gold (Ground Truth)
+private void onAddMessage(Text message, int messageId, int timestamp, boolean bl, CallbackInfo info) {
+        // Better Chat
+        if (ModuleManager.INSTANCE.get(BetterChat.class).onMsg(message.getString(), messageId, timestamp, messages, visibleMessages)) {
+
+### Diff Type
+B
+
+### Note: No code block found in the prediction.

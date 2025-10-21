@@ -1,0 +1,81 @@
+### Prompt
+<|im_start|>system
+You are a Great Git merge conflict resolver. Merge conflicts occur because both branch a and branch b have modified the same part of the base code in different ways. Your task is to analyze the changes made by a and b relative to base, understand their intentions, and produce a well-reasoned CoT (Chain of Thought) then then answer.<|im_end|>
+<|im_start|>user
+# Conflict
+>>>>>>> a
+mActiveMessage = savedInstanceState.getParcelable(STATE_ACTIVE_MESSAGE);
+||||||| base
+
+=======
+mSavedListState = savedInstanceState.getParcelable(STATE_MESSAGE_LIST);
+<<<<<<< b
+
+Moreover, we also provide you with the edit sequences, which refer to the token-level modifications from base to a and b, respectively.
+# Edit Sequence
+
+## From base to a
+The entire content comes from it, as the base is empty.
+
+
+## From base to b
+The entire content comes from it, as the base is empty.
+
+
+# CoT guide
+1. Analyze the conflict point(s): what did `a` change compared to `base`? what did `b` change compared to `base`?
+2. Evaluate each change: why should a particular change be kept, discarded, or modified?
+3. Understand the intention behind each change in `a` and `b`.
+4. Final decision: based on code style, business logic, and correctness, determine the appropriate resolution. 
+
+# Output Format:
+You should output two thing: 
+1. the CoT, which should be placed within the <cot></cot> tag.
+2. Final resolution, the answer should be within the ```java and ```\/no_think<|im_end|>
+<|im_start|>asistant
+
+### Model Prediction
+<think>
+
+</think>
+
+<cot>
+1. **Analyze the conflict point(s):**
+   - The conflict occurs because both branches `a` and `b` added a line that retrieves a `Parcelable` from `savedInstanceState`, but they are assigning it to different variables and using different keys.
+   - In branch `a`, the line is:
+     ```java
+     mActiveMessage = savedInstanceState.getParcelable(STATE_ACTIVE_MESSAGE);
+     ```
+     This suggests that branch `a` is trying to restore the active message from the saved state.
+   - In branch `b`, the line is:
+     ```java
+     mSavedListState = savedInstanceState.getParcelable(STATE_MESSAGE_LIST);
+     ```
+     This suggests that branch `b` is trying to restore the state of a message list from the saved state.
+
+2. **Evaluate each change:**
+   - Both changes are valid and serve different purposes. `mActiveMessage` is likely used to restore the currently active message, while `mSavedListState` is likely used to restore the scroll or layout state of a message list.
+   - Neither change should be discarded, as they represent distinct pieces of state that need to be preserved and restored.
+
+3. **Understand the intention behind each change:**
+   - The intention in `a` is to retain the active message state across configuration changes.
+   - The intention in `b` is to retain the message list state (e.g., scroll position) across configuration changes.
+   - These are orthogonal concerns and do not conflict in terms of functionality.
+
+4. **Final decision:**
+   - Since both lines are retrieving different data from the saved state and assigning it to different variables, they can coexist without conflict.
+   - The correct resolution is to include both lines in the final code, ensuring that both pieces of state are restored.
+</cot>
+
+```java
+mActiveMessage = savedInstanceState.getParcelable(STATE_ACTIVE_MESSAGE);
+mSavedListState = savedInstanceState.getParcelable(STATE_MESSAGE_LIST);
+```
+
+### Gold (Ground Truth)
+mSavedListState = savedInstanceState.getParcelable(STATE_MESSAGE_LIST);
+        mActiveMessage = savedInstanceState.getParcelable(STATE_ACTIVE_MESSAGE);
+
+### Diff Type
+A+B
+

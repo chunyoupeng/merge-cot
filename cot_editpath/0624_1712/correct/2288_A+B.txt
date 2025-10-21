@@ -1,0 +1,100 @@
+### Prompt
+<|im_start|>system
+You are a Great Git merge conflict resolver. Merge conflicts occur because both branch a and branch b have modified the same part of the base code in different ways. Your task is to analyze the changes made by a and b relative to base, understand their intentions, and produce a well-reasoned CoT (Chain of Thought) then then answer.<|im_end|>
+<|im_start|>user
+# Conflict
+>>>>>>> a
+String ascOrDesc = row.getString("ASC_OR_DESC");
+                    Boolean descending = "D".equals(ascOrDesc) ? Boolean.TRUE : ("A".equals(ascOrDesc) ? Boolean
+                        .FALSE : null);
+||||||| base
+String ascOrDesc = row.getString("ASC_OR_DESC");
+                    Boolean descending = "D".equals(ascOrDesc) ? Boolean.TRUE : "A".equals(ascOrDesc) ? Boolean.FALSE : null;
+=======
+String ascOrDesc;
+                    if (database instanceof Db2zDatabase) {
+                        ascOrDesc = row.getString("ORDER");
+                    } else {
+                        ascOrDesc = row.getString("ASC_OR_DESC");
+                    }
+                    Boolean descending = "D".equals(ascOrDesc) ? Boolean.TRUE : "A".equals(ascOrDesc) ? Boolean.FALSE : null;
+<<<<<<< b
+
+Moreover, we also provide you with the edit sequences, which refer to the token-level modifications from base to a and b, respectively.
+# Edit Sequence
+
+## From base to a
+<ADD> ( <newline> )
+
+
+## From base to b
+<ADD> ascOrDesc ; <newline> if ( database instanceof Db2zDatabase ) { <newline> ascOrDesc = row . getString ( " ORDER " ) ; <newline> } else { <newline> <newline> }
+
+
+# CoT guide
+1. Analyze the conflict point(s): what did `a` change compared to `base`? what did `b` change compared to `base`?
+2. Evaluate each change: why should a particular change be kept, discarded, or modified?
+3. Understand the intention behind each change in `a` and `b`.
+4. Final decision: based on code style, business logic, and correctness, determine the appropriate resolution. 
+
+# Output Format:
+You should output two thing: 
+1. the CoT, which should be placed within the <cot></cot> tag.
+2. Final resolution, the answer should be within the ```java and ```\/no_think<|im_end|>
+<|im_start|>asistant
+
+### Model Prediction
+<think>
+
+</think>
+
+<cot>
+1. **Analyze the conflict point(s):**
+   - **Branch `a`** modifies the line:
+     ```java
+     Boolean descending = "D".equals(ascOrDesc) ? Boolean.TRUE : "A".equals(ascOrDesc) ? Boolean.FALSE : null;
+     ```
+     into:
+     ```java
+     Boolean descending = "D".equals(ascOrDesc) ? Boolean.TRUE : ("A".equals(ascOrDesc) ? Boolean.FALSE : null);
+     ```
+     The only change is the addition of parentheses around the ternary expression for the "A" case. This is a stylistic change and does not affect the logic.
+   - **Branch `b`** introduces a conditional logic to determine the source of `ascOrDesc` based on the type of `database`. If it's a `Db2zDatabase`, it reads from the "ORDER" column; otherwise, it reads from "ASC_OR_DESC". This is a functional change that introduces a new behavior.
+
+2. **Evaluate each change:**
+   - **Branch `a`'s change** is purely stylistic. The parentheses make the ternary expression more readable by explicitly grouping the nested ternary operation. It does not alter the logic and is safe to keep.
+   - **Branch `b`'s change** introduces a conditional logic that adapts the source of `ascOrDesc` depending on the database type. This is a meaningful change that likely addresses a compatibility or correctness issue with `Db2zDatabase`. It is important to retain this logic.
+
+3. **Understand the intention behind each change:**
+   - **Branch `a`** aims to improve code readability without changing functionality.
+   - **Branch `b`** aims to make the code more adaptable to different database types, likely to handle a specific case where the column name differs.
+
+4. **Final decision:**
+   - The logic from **branch `b`** should be retained because it introduces a necessary conditional behavior.
+   - The stylistic improvement from **branch `a`** can be applied on top of `b`'s logic to enhance readability.
+   - The final code should include both the conditional logic and the improved readability via parentheses.
+</cot>
+
+```java
+String ascOrDesc;
+if (database instanceof Db2zDatabase) {
+    ascOrDesc = row.getString("ORDER");
+} else {
+    ascOrDesc = row.getString("ASC_OR_DESC");
+}
+Boolean descending = "D".equals(ascOrDesc) ? Boolean.TRUE : ("A".equals(ascOrDesc) ? Boolean.FALSE : null);
+```
+
+### Gold (Ground Truth)
+String ascOrDesc;
+                    if (database instanceof Db2zDatabase) {
+                        ascOrDesc = row.getString("ORDER");
+                    } else {
+                        ascOrDesc = row.getString("ASC_OR_DESC");
+                    }
+                    Boolean descending = "D".equals(ascOrDesc) ? Boolean.TRUE : ("A".equals(ascOrDesc) ? Boolean
+                        .FALSE : null);
+
+### Diff Type
+A+B
+

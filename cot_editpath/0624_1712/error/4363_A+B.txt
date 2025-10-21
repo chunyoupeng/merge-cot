@@ -1,0 +1,78 @@
+### Prompt
+<|im_start|>system
+You are a Great Git merge conflict resolver. Merge conflicts occur because both branch a and branch b have modified the same part of the base code in different ways. Your task is to analyze the changes made by a and b relative to base, understand their intentions, and produce a well-reasoned CoT (Chain of Thought) then then answer.<|im_end|>
+<|im_start|>user
+# Conflict
+>>>>>>> a
+@Test //Passes only when run individually. Doesn't pass when run with the rest of the tests. It not only fails, it messes up the metrics and cause all following tests to fail. so ignoring it unless we fix it
+    @Category(UnstableTests.class)
+    @Ignore
+||||||| base
+@Test //Passes only when run individually. Doesn't pass when run with the rest of the tests
+    @Category(UnstableTests.class)
+=======
+@Test //Passes only when run individually. Doesn't pass when run with the rest of the tests
+//    @Category(UnstableTests.class)
+    @Category(FeatureAltTests.class)
+<<<<<<< b
+
+Moreover, we also provide you with the edit sequences, which refer to the token-level modifications from base to a and b, respectively.
+# Edit Sequence
+
+## From base to a
+<ADD> . It not only fails , it messes up the metrics and cause all following tests to fail . so ignoring it unless we fix it <newline> @ Ignore
+
+
+## From base to b
+<ADD> / / <newline> @ Category ( FeatureAltTests . class )
+
+
+# CoT guide
+1. Analyze the conflict point(s): what did `a` change compared to `base`? what did `b` change compared to `base`?
+2. Evaluate each change: why should a particular change be kept, discarded, or modified?
+3. Understand the intention behind each change in `a` and `b`.
+4. Final decision: based on code style, business logic, and correctness, determine the appropriate resolution. 
+
+# Output Format:
+You should output two thing: 
+1. the CoT, which should be placed within the <cot></cot> tag.
+2. Final resolution, the answer should be within the ```java and ```\/no_think<|im_end|>
+<|im_start|>asistant
+
+### Model Prediction
+<think>
+
+</think>
+
+<cot>
+1. **Analyze the conflict point(s):**
+   - **Branch `a`** added a comment explaining that the test not only fails but also causes subsequent tests to fail due to messed-up metrics. It also added `@Ignore` to skip the test.
+   - **Branch `b`** removed the `@Category(UnstableTests.class)` annotation and added `@Category(FeatureAltTests.class)`.
+
+2. **Evaluate each change:**
+   - **Branch `a`'s change** is motivated by the test being unstable and causing side effects. The `@Ignore` annotation is a strong signal to prevent the test from running until it's fixed.
+   - **Branch `b`'s change** is likely motivated by categorizing the test under a different test suite (`FeatureAltTests`) for organizational or reporting purposes.
+
+3. **Understand the intention behind each change:**
+   - **Branch `a`** wants to prevent the test from running due to its instability and negative side effects.
+   - **Branch `b`** wants to reclassify the test into a different category for better test suite organization.
+
+4. **Final decision:**
+   - The intention of `a` is more urgent and critical: the test is causing failures in other tests, which is a serious issue. Therefore, the `@Ignore` annotation should be retained.
+   - The reclassification in `b` can still be applied, but it should not override the need to prevent the test from running.
+   - The best resolution is to keep the `@Ignore` from `a`, include the new category from `b`, and preserve the detailed comment from `a` to explain the issue.
+</cot>
+
+```java
+@Test //Passes only when run individually. Doesn't pass when run with the rest of the tests. It not only fails, it messes up the metrics and cause all following tests to fail. so ignoring it unless we fix it
+    @Category(FeatureAltTests.class)
+    @Ignore
+```
+
+### Gold (Ground Truth)
+@Test //Passes only when run individually. Doesn't pass when run with the rest of the tests
+    @Category(FeatureAltTests.class)
+
+### Diff Type
+A+B
+
